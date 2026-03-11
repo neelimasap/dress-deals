@@ -1,0 +1,18 @@
+{
+  "currency": "USD",
+  "brands": [
+    {
+      "name": "Zimmermann",
+      "queries": [
+        "Zimmermann Illuminate Dress",
+        "Zimmermann Everly Dress"
+      ]
+    },
+    {
+      "name": "Aje",
+      "queries": [
+        "Aje Luna Dress"
+      ]
+    }
+  ]
+}

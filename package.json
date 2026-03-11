@@ -1,0 +1,10 @@
+{
+  "name": "dress-deals",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "collect": "python scripts/collect_deals.py",
+    "report": "node scripts/generate-report.mjs",
+    "serve": "node scripts/serve.mjs"
+  }
+}

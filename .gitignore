@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+data/cache/
+/.vercel-static-deploy/
+reports/
+node_modules/
+
+.vercel
+.env*.local
