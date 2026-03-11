@@ -34,6 +34,7 @@ function summarizeBrand(brand) {
     .join("\n");
 }
 
+<<<<<<< HEAD
 function summarizeSingleBrand(payload) {
   return payload.items
     .map((item) => {
@@ -62,6 +63,11 @@ async function main() {
   const sections = Array.isArray(payload.brands)
     ? payload.brands.map((brand) => `# ${brand.name}\n\n${summarizeBrand(brand)}`).join("\n")
     : `# ${payload.brand}\n\n${summarizeSingleBrand(payload)}`;
+=======
+async function main() {
+  const payload = JSON.parse(await readFile(dataPath, "utf8"));
+  const sections = payload.brands.map((brand) => `# ${brand.name}\n\n${summarizeBrand(brand)}`).join("\n");
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
   const content = [
     "# Daily Dress Deals",
     "",

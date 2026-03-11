@@ -1,9 +1,18 @@
+<<<<<<< HEAD
 const CACHE_NAME = "dress-deals-v2";
 const ASSETS = [
   "/",
   "/index.html",
   "/frontend/styles.css",
   "/frontend/app.js",
+=======
+const CACHE_NAME = "dress-deals-v1";
+const ASSETS = [
+  "/",
+  "/index.html",
+  "/styles.css",
+  "/app.js",
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
   "/manifest.webmanifest",
   "/data/deals.json",
   "/icons/icon-192.svg",
@@ -15,6 +24,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
 });
 
+<<<<<<< HEAD
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -40,6 +50,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+=======
+self.addEventListener("fetch", (event) => {
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => cachedResponse || fetch(event.request))
   );

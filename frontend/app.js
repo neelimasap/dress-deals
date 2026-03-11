@@ -26,6 +26,7 @@ async function loadDeals() {
   return response.json();
 }
 
+<<<<<<< HEAD
 function normalizeData(data) {
   if (Array.isArray(data.brands)) {
     return data.brands.flatMap((brand) =>
@@ -54,6 +55,8 @@ function normalizeData(data) {
   return [];
 }
 
+=======
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
 function getItemSummary(brandName, item) {
   const sortedStores = [...item.stores].sort((left, right) => left.price - right.price);
   const bestStore = sortedStores[0];
@@ -83,6 +86,7 @@ function getImageUrl(item) {
   return item.imageUrl || null;
 }
 
+<<<<<<< HEAD
 function getItemMeta(item) {
   if (item.releaseYear) {
     return `Released ${item.releaseYear}`;
@@ -95,6 +99,8 @@ function getItemMeta(item) {
   return "Dress";
 }
 
+=======
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
 function renderBestDeal(bestDeal) {
   const host = document.querySelector("#best-deal");
   const imageMarkup = getImageUrl(bestDeal.item)
@@ -109,7 +115,11 @@ function renderBestDeal(bestDeal) {
     ${imageMarkup}
     <p class="brand-name">${bestDeal.brandName}</p>
     <h2>${bestDeal.item.name}</h2>
+<<<<<<< HEAD
     <p class="best-deal-meta">${getItemMeta(bestDeal.item)}</p>
+=======
+    <p class="best-deal-meta">${bestDeal.item.silhouette} / ${bestDeal.item.material}</p>
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
     <p class="best-deal-price">${currencyFormatter.format(bestDeal.bestStore.price)}</p>
     <p class="best-deal-meta">
       ${bestDeal.bestStore.name} / down ${bestDeal.discountPct}% from
@@ -155,7 +165,11 @@ function renderDeals(items) {
     node.querySelector(".brand-name").textContent = summary.brandName;
     node.querySelector(".item-name").textContent = summary.item.name;
     node.querySelector(".discount-pill").textContent = `${summary.discountPct}% off`;
+<<<<<<< HEAD
     node.querySelector(".item-meta").textContent = getItemMeta(summary.item);
+=======
+    node.querySelector(".item-meta").textContent = `${summary.item.silhouette} / ${summary.item.material}`;
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
     node.querySelector(".lowest-price").textContent = currencyFormatter.format(summary.bestStore.price);
     node.querySelector(".best-store").textContent = summary.bestStore.name;
 
@@ -241,6 +255,7 @@ async function registerServiceWorker() {
 async function main() {
   try {
     const data = await loadDeals();
+<<<<<<< HEAD
     const summaries = normalizeData(data)
       .map(({ brandName, item }) => getItemSummary(brandName, item))
       .sort((left, right) => right.discountPct - left.discountPct);
@@ -249,6 +264,11 @@ async function main() {
       throw new Error("No matching dress deals were found in the current dataset.");
     }
 
+=======
+    const summaries = data.brands
+      .flatMap((brand) => brand.items.map((item) => getItemSummary(brand.name, item)))
+      .sort((left, right) => right.discountPct - left.discountPct);
+>>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
     const bestDeal = summaries[0];
 
     renderBestDeal(bestDeal);
