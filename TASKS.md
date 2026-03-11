@@ -1,0 +1,4 @@
+- [x] add API caching
+- [ ] add dress images
+- [ ] build simple UI
+- [ ] add price history graph

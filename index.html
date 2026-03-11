@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f2ede3" />
+    <meta
+      name="description"
+      content="Track luxury dress discounts, compare stores, and share a polished mobile-friendly dashboard."
+    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="frontend/styles.css" />
+    <title>Dress Deal Tracker</title>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Luxury markdown tracker</p>
+          <h1>Quietly catch the best dress drops before they disappear.</h1>
+          <p class="hero-text">
+            Share a clean, phone-friendly dashboard that highlights the best markdowns across a small set of brands.
+          </p>
+          <div class="hero-actions">
+            <button id="install-button" class="button button-primary" hidden>Add to Home Screen</button>
+            <a class="button button-secondary" href="reports/daily-deals.md">Open daily report</a>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <p class="panel-label">Today's best deal</p>
+          <div id="best-deal" class="best-deal-card"></div>
+        </aside>
+      </header>
+
+      <main>
+        <section class="stats-grid" id="stats-grid" aria-label="Overview"></section>
+
+        <section class="section-heading">
+          <div>
+            <p class="eyebrow">Watchlist</p>
+            <h2>Current markdowns</h2>
+          </div>
+          <p id="last-updated" class="section-meta"></p>
+        </section>
+
+        <section id="deals-grid" class="deals-grid" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <template id="deal-card-template">
+      <article class="deal-card">
+        <div class="deal-image-shell" hidden>
+          <img class="deal-image" alt="" loading="lazy" />
+        </div>
+        <div class="deal-card-header">
+          <div>
+            <p class="brand-name"></p>
+            <h3 class="item-name"></h3>
+          </div>
+          <span class="discount-pill"></span>
+        </div>
+        <p class="item-meta"></p>
+        <div class="price-row">
+          <div>
+            <p class="price-label">Lowest price</p>
+            <p class="lowest-price"></p>
+          </div>
+          <div>
+            <p class="price-label">Best store</p>
+            <p class="best-store"></p>
+          </div>
+        </div>
+        <div class="sparkline-block">
+          <p class="price-label">Price history</p>
+          <div class="sparkline"></div>
+          <div class="history-labels"></div>
+        </div>
+        <div class="store-list"></div>
+      </article>
+    </template>
+
+    <script type="module" src="frontend/app.js"></script>
+  </body>
+</html>

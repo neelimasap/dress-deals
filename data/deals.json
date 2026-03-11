@@ -1,0 +1,229 @@
+{
+  "lastUpdated": "2026-03-10T23:25:19-05:00",
+  "currency": "USD",
+  "brands": [
+    {
+      "name": "Zimmermann",
+      "items": [
+        {
+          "id": "zimmermann-illuminate-dress",
+          "name": "Zimmermann Illuminate Dress",
+          "silhouette": "Midi",
+          "material": "Linen silk organza",
+          "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQOO8OXtaMoDpQ_XxAxJQ5VpYRJ8ZYh8TNC0fVORPwnnHa25MX2fXyQZYxqcpLiqhQwXOj1COLsLRmNr_cgQWj2TROW9u61MP4CWrdet76pTCnzp6mRPTFB",
+          "stores": [
+            {
+              "name": "NET-A-PORTER",
+              "price": 780.0,
+              "originalPrice": 1300.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Illuminate Dress&prds=catalogid:7224650423426381111,headlineOfferDocid:4103104219911519324,imageDocid:14156563731263795452,gpcid:18057451805144240288,mid:576462860022698733,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQOO8OXtaMoDpQ_XxAxJQ5VpYRJ8ZYh8TNC0fVORPwnnHa25MX2fXyQZYxqcpLiqhQwXOj1COLsLRmNr_cgQWj2TROW9u61MP4CWrdet76pTCnzp6mRPTFB",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Saks Fifth Avenue",
+              "price": 875.0,
+              "originalPrice": 1750.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Illuminate Dress&prds=catalogid:5656193059337099533,headlineOfferDocid:12610496796765630971,imageDocid:17040696197409170000,gpcid:3099010371422359884,mid:576462870956718351,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQGN3kg48jnnxR1dPDr8dcz4l7yXm6Rx4jbttwyszevSN8_Mh-wEmo3k5ZzydoWOc-W1dfJawKImsbglLkrsWa_pVaT9NiXAQlTzfnNpWd4U6tZxMQKBKEZ",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Neiman Marcus",
+              "price": 1337.5,
+              "originalPrice": 2675.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Illuminate Dress&prds=catalogid:3963040711519420768,headlineOfferDocid:10119431825090906803,imageDocid:7365082160088733511,rds:PC_165782588936460440|PROD_PC_165782588936460440,gpcid:165782588936460440,mid:576462517065390500,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSYWpj0wSIXSJxy44XCOGP6o7bv-jvbovN67MUsezd0IVl8chmMxF1mqZY_xO-rUlprIAyns3JQYuWpw50V1HnQhYY-UhxrTYycL-IFLBIJ8eGk1O-lTmCZ",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Editorialist",
+              "price": 1475.0,
+              "originalPrice": 2950.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Illuminate Dress&prds=catalogid:5305608110068915281,headlineOfferDocid:4137368655721192660,imageDocid:5870250792079804041,gpcid:2314741873295148189,mid:576462517160100923,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTiWrywt8JpgWYyPpWSZNnSzjtF6JlLzrKEQipOQz_T0hYmg9qrJXFweDOfZ01FBO-FVWY6YXxsiROLKBYumjsaV56CgNC8KtapYIf1RhyIbnxaPEv1TNpEYg",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Editorialist",
+              "price": 2455.0,
+              "originalPrice": 2455.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Illuminate Dress&prds=catalogid:6305850594766973135,headlineOfferDocid:581707886994635287,imageDocid:18137595946789471693,rds:PC_16959846005800462466|PROD_PC_16959846005800462466,gpcid:16959846005800462466,mid:576462814125962252,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRogFwAmd9DENYG5SRiY6kiDtZtWtExe3TN6kXzGBl1t0ioVAZDbOrBGdQgiDsVZdLQp2yqKGze6-MTIamdPfEKZoposwveFJShOnFfYAPLyv7F1BiooQzh",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            }
+          ],
+          "history": [
+            {
+              "date": "2026-01-15",
+              "price": 795
+            },
+            {
+              "date": "2026-02-10",
+              "price": 695
+            },
+            {
+              "date": "2026-03-01",
+              "price": 620
+            },
+            {
+              "date": "2026-03-10",
+              "price": 575
+            },
+            {
+              "date": "2026-03-10",
+              "price": 780.0
+            }
+          ]
+        },
+        {
+          "id": "zimmermann-everly-dress",
+          "name": "Zimmermann Everly Dress",
+          "silhouette": "Maxi",
+          "material": "Cotton voile",
+          "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSEhya8XKP4xpBjC9qz1Ty5vKewM0WLCBH5BkHeENVK5NFh37UKE6lWNJutpuObTmF7Te_KMxez69VEWujL9PFfHNCUwUevNE76WVI1TbS2nczSY32QITcG4w",
+          "stores": [
+            {
+              "name": "NET-A-PORTER",
+              "price": 510.0,
+              "originalPrice": 850.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Everly Dress&prds=productid:2643611642315364063,headlineOfferDocid:2643611642315364063,imageDocid:15517584557266925380,rds:PC_13734867426039999649|PROD_PC_13734867426039999649,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSEhya8XKP4xpBjC9qz1Ty5vKewM0WLCBH5BkHeENVK5NFh37UKE6lWNJutpuObTmF7Te_KMxez69VEWujL9PFfHNCUwUevNE76WVI1TbS2nczSY32QITcG4w",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Lyst",
+              "price": 795.0,
+              "originalPrice": 795.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Everly Dress&prds=catalogid:9992254498449014980,headlineOfferDocid:12370414763869009948,imageDocid:1439044109039835226,gpcid:16271323349467563437,mid:576462816797713959,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcS6tb4rdNvzUeDwTR4cPRQAGmv2o829hjkOq2NsP2H91WNenGDx1ikOPwj5qj6OZiew2mlHifkhwNaqwz3NPQU4eJbxvkX86-DBwyDmxprFOtnq5qSqClH4",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Editorialist",
+              "price": 1071.0,
+              "originalPrice": 1071.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Everly Dress&prds=catalogid:3689107130370010432,headlineOfferDocid:14995287029942184794,imageDocid:11142365122740884617,gpcid:4046402426671476342,mid:576462835068530918,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRPwrAjZqj_ka_OUv1ZFTiTMYPOqbm1Bmz5mXvS5waRAi1LV9zSxGJWg59ND_OOy5imOPklLaODwjTgdGowcWJZeC9i0BkTU4JWHcPpt9tnov8ECqW0OjYBaw",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "farfetch.com",
+              "price": 1071.0,
+              "originalPrice": 1071.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Everly Dress&prds=catalogid:12267064456000906928,headlineOfferDocid:7140624722937366463,imageDocid:6006411253579326693,gpcid:287736364263102472,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSu2j9uxmdC5LLG8fdndPMKDnkD5Ax00YGm_uT1IdRDnEImbkshd2gwXPKmN-A-Vrd6K60Hydsbzqa4NxeAJqOVZBA8P3CYBa6a-EekOiej9jjLc107SOC00w",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Editorialist",
+              "price": 2487.0,
+              "originalPrice": 2487.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Zimmermann Everly Dress&prds=catalogid:3675191304957366728,headlineOfferDocid:10706013054419043929,imageDocid:9652690358437741911,rds:PC_4224382649453780061|PROD_PC_4224382649453780061,gpcid:4224382649453780061,mid:576462809919939804,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcScfuqHMQNRojzmvPeyef3kKtH_lsveMIUSR3Q0z1K4XRwaXUo6FA_XZYpKLzES5xWfidXhIyUyg7k9oilqlRG7XQ6ZEfn4ekiRxAirYfg6nbnD3P41FXOIGw",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            }
+          ],
+          "history": [
+            {
+              "date": "2026-01-20",
+              "price": 850
+            },
+            {
+              "date": "2026-02-18",
+              "price": 690
+            },
+            {
+              "date": "2026-03-05",
+              "price": 590
+            },
+            {
+              "date": "2026-03-10",
+              "price": 498
+            },
+            {
+              "date": "2026-03-10",
+              "price": 510.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aje",
+      "items": [
+        {
+          "id": "aje-luna-dress",
+          "name": "Aje Luna Dress",
+          "silhouette": "Mini",
+          "material": "Pleated cotton poplin",
+          "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTAy8-lS2XitQIGLAw4Jt7XTJe2yg6YB3N7eNnaatD70lzfGz4eQ5eYxnewJUjbgJ3vhR__DX72bbPvUMzGLRMGExnvygqZUxKvS1pVI9ryjhWgy3KbwSbp",
+          "stores": [
+            {
+              "name": "Aje",
+              "price": 342.88,
+              "originalPrice": 342.88,
+              "url": "https://www.google.com/search?ibp=oshop&q=Aje Luna Dress&prds=catalogid:10911996600498768928,headlineOfferDocid:15316633615760095762,imageDocid:13055543305547163033,rds:PC_9911788436877187913|PROD_PC_9911788436877187913,gpcid:9911788436877187913,mid:576462800675575571,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTAy8-lS2XitQIGLAw4Jt7XTJe2yg6YB3N7eNnaatD70lzfGz4eQ5eYxnewJUjbgJ3vhR__DX72bbPvUMzGLRMGExnvygqZUxKvS1pVI9ryjhWgy3KbwSbp",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "REVOLVE",
+              "price": 439.0,
+              "originalPrice": 439.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Aje Luna Dress&prds=catalogid:3685098250140844989,headlineOfferDocid:8002711301237812040,imageDocid:7982557069860789257,rds:PC_10498986557539688716|PROD_PC_10498986557539688716,gpcid:10498986557539688716,mid:576462827361898775,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQpLa6oMOPuoAx-j7VNYegSLZ4GsCDkyh1jzjeTVSOk0bbLibAxQmf5kJtDFWXElfqLRCFpYbgZfYxkyqXtyHi81Rm6VrO_GR81dpNonvAQV-jlZaKNOISgBQ",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Aje",
+              "price": 463.9,
+              "originalPrice": 463.9,
+              "url": "https://www.google.com/search?ibp=oshop&q=Aje Luna Dress&prds=catalogid:7754861506149508175,headlineOfferDocid:3515680908801764528,imageDocid:16374205209852816552,rds:PC_12509619835031977342|PROD_PC_12509619835031977342,gpcid:12509619835031977342,mid:576462821159476622,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQe4FJUxJxYaruoRevq_LU0hOzh9LsXlyQWCo1IyGRLuieixen6eQM2bnVSzqiDeEjkc1D3B2r4ID1Pt5fLINjYzEs6SKIV5B1UmLATr6xfxuTBsBJ6KRMjiA",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Poshmark",
+              "price": 500.0,
+              "originalPrice": 500.0,
+              "url": "https://www.google.com/search?ibp=oshop&q=Aje Luna Dress&prds=productid:17611589250867047122,headlineOfferDocid:17611589250867047122,imageDocid:12497652880082969054,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSqKLpDCiChX8xuxMg26h1HOhSEv38AFXGrNpPNQ_WnvyNk-ljRLH27-bJnArdbinbAMu3pWqofLqAVlToyMtkDgbXgpNTZ8dqIU9gn6Qc",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            },
+            {
+              "name": "Aje",
+              "price": 710.16,
+              "originalPrice": 710.16,
+              "url": "https://www.google.com/search?ibp=oshop&q=Aje Luna Dress&prds=catalogid:2475532972876513115,headlineOfferDocid:13243348645649582321,imageDocid:157564656105426003,rds:PC_4049463547288298895|PROD_PC_4049463547288298895,gpcid:4049463547288298895,mid:576462502803539961,pvt:a&hl=en&gl=us&udm=28",
+              "imageUrl": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcS_25KlKmB_7dLyO7skUoMuZ59_6ygyJ2W0-er9Ar_xnNuEHcKra6rkTWQBsweZXukjIHn5oWzkrv2Q6-wXBLTwA-LXiWLKpVUud94RKtTa7lQxtVL8YfMSOA",
+              "updatedAt": "2026-03-10T23:25:19-05:00"
+            }
+          ],
+          "history": [
+            {
+              "date": "2026-02-01",
+              "price": 495
+            },
+            {
+              "date": "2026-02-22",
+              "price": 420
+            },
+            {
+              "date": "2026-03-04",
+              "price": 390
+            },
+            {
+              "date": "2026-03-10",
+              "price": 350
+            },
+            {
+              "date": "2026-03-10",
+              "price": 342.88
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
