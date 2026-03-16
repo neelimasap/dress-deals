@@ -34,13 +34,14 @@ function summarizeBrand(brand) {
     .join("\n");
 }
 
-<<<<<<< HEAD
 function summarizeSingleBrand(payload) {
   return payload.items
     .map((item) => {
       const bestStore = [...item.offers].sort((left, right) => left.price - right.price)[0];
       const discountPct = Math.round(((bestStore.originalPrice - bestStore.price) / bestStore.originalPrice) * 100);
-      const history = (item.history || []).map((entry) => `${entry.date} - ${currencyFormatter.format(entry.price)}`).join("\n");
+      const history = (item.history || [])
+        .map((entry) => `${entry.date} - ${entry.store || "Unknown store"} - ${currencyFormatter.format(entry.price)}`)
+        .join("\n");
 
       return [
         `## ${item.name}`,
@@ -52,6 +53,11 @@ function summarizeSingleBrand(payload) {
         "",
         "Price history:",
         history,
+        "",
+        "Store snapshots:",
+        (item.storeHistory || [])
+          .map((entry) => `${entry.date} - ${entry.store} - ${currencyFormatter.format(entry.price)}`)
+          .join("\n"),
         ""
       ].join("\n");
     })
@@ -63,11 +69,6 @@ async function main() {
   const sections = Array.isArray(payload.brands)
     ? payload.brands.map((brand) => `# ${brand.name}\n\n${summarizeBrand(brand)}`).join("\n")
     : `# ${payload.brand}\n\n${summarizeSingleBrand(payload)}`;
-=======
-async function main() {
-  const payload = JSON.parse(await readFile(dataPath, "utf8"));
-  const sections = payload.brands.map((brand) => `# ${brand.name}\n\n${summarizeBrand(brand)}`).join("\n");
->>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
   const content = [
     "# Daily Dress Deals",
     "",

@@ -9,11 +9,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   timeStyle: "short"
 });
 
-const compactDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric"
-});
-
 let deferredPrompt;
 
 async function loadDeals() {
@@ -26,7 +21,6 @@ async function loadDeals() {
   return response.json();
 }
 
-<<<<<<< HEAD
 function normalizeData(data) {
   if (Array.isArray(data.brands)) {
     return data.brands.flatMap((brand) =>
@@ -34,8 +28,7 @@ function normalizeData(data) {
         brandName: brand.name,
         item: {
           ...item,
-          stores: item.stores || item.offers || [],
-          history: item.history || []
+          stores: item.stores || item.offers || []
         }
       }))
     );
@@ -46,8 +39,7 @@ function normalizeData(data) {
       brandName: data.brand,
       item: {
         ...item,
-        stores: item.offers || [],
-        history: item.history || []
+        stores: item.offers || []
       }
     }));
   }
@@ -55,30 +47,30 @@ function normalizeData(data) {
   return [];
 }
 
-=======
->>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
 function getItemSummary(brandName, item) {
   const sortedStores = [...item.stores].sort((left, right) => left.price - right.price);
   const bestStore = sortedStores[0];
-  const discountPct = Math.round(((bestStore.originalPrice - bestStore.price) / bestStore.originalPrice) * 100);
+  const hasDiscount = bestStore.originalPrice > bestStore.price;
+  const discountPct = hasDiscount
+    ? Math.round(((bestStore.originalPrice - bestStore.price) / bestStore.originalPrice) * 100)
+    : 0;
 
   return {
     brandName,
     item,
     bestStore,
-    discountPct
+    discountPct,
+    hasDiscount
   };
 }
 
-function buildStats(items) {
-  const totalTracked = items.length;
-  const bestDiscount = Math.max(...items.map((entry) => entry.discountPct));
-  const underSixHundred = items.filter((entry) => entry.bestStore.price < 600).length;
+function buildStats(allSummaries, visibleSummaries) {
+  const bestDiscount = Math.max(...allSummaries.map((entry) => entry.discountPct));
 
   return [
-    { label: "Tracked styles", value: totalTracked },
+    { label: "Tracked styles", value: allSummaries.length },
     { label: "Best markdown", value: `${bestDiscount}%` },
-    { label: "Under $600", value: underSixHundred }
+    { label: "Showing now", value: visibleSummaries.length }
   ];
 }
 
@@ -86,7 +78,26 @@ function getImageUrl(item) {
   return item.imageUrl || null;
 }
 
-<<<<<<< HEAD
+function normalizeStoreName(name) {
+  return String(name || "").trim().toLowerCase();
+}
+
+function buildStoreOptions(allSummaries) {
+  const stores = new Map();
+
+  allSummaries.forEach((summary) => {
+    const key = normalizeStoreName(summary.bestStore.name);
+    if (!key || stores.has(key)) {
+      return;
+    }
+    stores.set(key, summary.bestStore.name);
+  });
+
+  return [...stores.entries()]
+    .sort((left, right) => left[1].localeCompare(right[1]))
+    .map(([, label]) => label);
+}
+
 function getItemMeta(item) {
   if (item.releaseYear) {
     return `Released ${item.releaseYear}`;
@@ -99,8 +110,6 @@ function getItemMeta(item) {
   return "Dress";
 }
 
-=======
->>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
 function renderBestDeal(bestDeal) {
   const host = document.querySelector("#best-deal");
   const imageMarkup = getImageUrl(bestDeal.item)
@@ -115,16 +124,15 @@ function renderBestDeal(bestDeal) {
     ${imageMarkup}
     <p class="brand-name">${bestDeal.brandName}</p>
     <h2>${bestDeal.item.name}</h2>
-<<<<<<< HEAD
     <p class="best-deal-meta">${getItemMeta(bestDeal.item)}</p>
-=======
-    <p class="best-deal-meta">${bestDeal.item.silhouette} / ${bestDeal.item.material}</p>
->>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
-    <p class="best-deal-price">${currencyFormatter.format(bestDeal.bestStore.price)}</p>
     <p class="best-deal-meta">
-      ${bestDeal.bestStore.name} / down ${bestDeal.discountPct}% from
-      ${currencyFormatter.format(bestDeal.bestStore.originalPrice)}
+      ${bestDeal.hasDiscount
+        ? `Best markdown today: ${bestDeal.discountPct}% off at ${bestDeal.bestStore.name}`
+        : `Best available price today: ${bestDeal.bestStore.name}`}
     </p>
+    <a class="button button-secondary best-deal-link" href="${bestDeal.bestStore.url}" target="_blank" rel="noreferrer">
+      View top pick
+    </a>
   `;
 
   const image = host.querySelector(".best-deal-image");
@@ -154,64 +162,41 @@ function renderDeals(items) {
   const cards = items.map((summary) => {
     const node = template.content.cloneNode(true);
     const card = node.querySelector(".deal-card");
-    const bars = node.querySelector(".sparkline");
-    const labels = node.querySelector(".history-labels");
-    const stores = node.querySelector(".store-list");
     const imageShell = node.querySelector(".deal-image-shell");
     const image = node.querySelector(".deal-image");
-    const highestHistory = Math.max(...summary.item.history.map((entry) => entry.price));
     const imageUrl = getImageUrl(summary.item);
 
     node.querySelector(".brand-name").textContent = summary.brandName;
     node.querySelector(".item-name").textContent = summary.item.name;
-    node.querySelector(".discount-pill").textContent = `${summary.discountPct}% off`;
-<<<<<<< HEAD
+    const discountPill = node.querySelector(".discount-pill");
+    if (summary.hasDiscount) {
+      discountPill.textContent = `${summary.discountPct}% off`;
+    } else {
+      discountPill.remove();
+    }
     node.querySelector(".item-meta").textContent = getItemMeta(summary.item);
-=======
-    node.querySelector(".item-meta").textContent = `${summary.item.silhouette} / ${summary.item.material}`;
->>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
-    node.querySelector(".lowest-price").textContent = currencyFormatter.format(summary.bestStore.price);
-    node.querySelector(".best-store").textContent = summary.bestStore.name;
-
+    const offerStore = node.querySelector(".offer-store");
+    offerStore.innerHTML = `<a href="${summary.bestStore.url}" target="_blank" rel="noreferrer">${summary.bestStore.name}</a>`;
+    node.querySelector(".offer-price").textContent = currencyFormatter.format(summary.bestStore.price);
+    node.querySelector(".offer-updated").textContent = `Updated ${dateFormatter.format(new Date(summary.bestStore.updatedAt))}`;
+    node.querySelector(".offer-original").textContent =
+      summary.hasDiscount
+        ? `Was ${currencyFormatter.format(summary.bestStore.originalPrice)}`
+        : "";
     if (imageUrl) {
+      const imageLink = document.createElement("a");
+      imageLink.href = summary.bestStore.url;
+      imageLink.target = "_blank";
+      imageLink.rel = "noreferrer";
       image.src = imageUrl;
       image.alt = summary.item.name;
+      imageShell.appendChild(imageLink);
+      imageLink.appendChild(image);
       imageShell.hidden = false;
       image.addEventListener("error", () => {
         imageShell.hidden = true;
       }, { once: true });
     }
-
-    summary.item.history.forEach((entry) => {
-      const bar = document.createElement("div");
-      bar.className = "sparkline-bar";
-      bar.style.height = `${Math.max(20, (entry.price / highestHistory) * 84)}px`;
-      bar.title = `${compactDateFormatter.format(new Date(entry.date))}: ${currencyFormatter.format(entry.price)}`;
-      bars.appendChild(bar);
-
-      const label = document.createElement("span");
-      label.textContent = compactDateFormatter.format(new Date(entry.date));
-      labels.appendChild(label);
-    });
-
-    summary.item.stores
-      .slice()
-      .sort((left, right) => left.price - right.price)
-      .forEach((store) => {
-        const row = document.createElement("div");
-        row.className = "store-row";
-        row.innerHTML = `
-          <div>
-            <a href="${store.url}" target="_blank" rel="noreferrer">${store.name}</a>
-            <div class="store-subtext">Updated ${dateFormatter.format(new Date(store.updatedAt))}</div>
-          </div>
-          <div>
-            <strong>${currencyFormatter.format(store.price)}</strong>
-            <div class="store-subtext">Was ${currencyFormatter.format(store.originalPrice)}</div>
-          </div>
-        `;
-        stores.appendChild(row);
-      });
 
     return card;
   });
@@ -246,6 +231,18 @@ async function registerServiceWorker() {
   }
 
   try {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+
+      if ("caches" in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+      }
+
+      return;
+    }
+
     await navigator.serviceWorker.register("../service-worker.js");
   } catch (error) {
     console.error("Service worker registration failed", error);
@@ -255,25 +252,56 @@ async function registerServiceWorker() {
 async function main() {
   try {
     const data = await loadDeals();
-<<<<<<< HEAD
-    const summaries = normalizeData(data)
+    const allSummaries = normalizeData(data)
       .map(({ brandName, item }) => getItemSummary(brandName, item))
-      .sort((left, right) => right.discountPct - left.discountPct);
+      .sort((left, right) => {
+        if (right.discountPct !== left.discountPct) {
+          return right.discountPct - left.discountPct;
+        }
+        return left.bestStore.price - right.bestStore.price;
+      });
 
-    if (!summaries.length) {
+    if (!allSummaries.length) {
       throw new Error("No matching dress deals were found in the current dataset.");
     }
 
-=======
-    const summaries = data.brands
-      .flatMap((brand) => brand.items.map((item) => getItemSummary(brand.name, item)))
-      .sort((left, right) => right.discountPct - left.discountPct);
->>>>>>> 7cac992bb87289d5a5c4636070be74c4a79b99d3
-    const bestDeal = summaries[0];
+    const priceFilter = document.querySelector("#price-filter");
+    const storeFilter = document.querySelector("#store-filter");
 
-    renderBestDeal(bestDeal);
-    renderStats(buildStats(summaries));
-    renderDeals(summaries);
+    storeFilter.replaceChildren(
+      ...[
+        (() => {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "All stores";
+          return option;
+        })(),
+        ...buildStoreOptions(allSummaries).map((store) => {
+          const option = document.createElement("option");
+          option.value = store;
+          option.textContent = store;
+          return option;
+        })
+      ]
+    );
+
+    function applyFilter() {
+      const maxPrice = priceFilter.value ? Number(priceFilter.value) : Infinity;
+      const selectedStore = normalizeStoreName(storeFilter.value);
+      const visible = allSummaries.filter((summary) =>
+        summary.bestStore.price <= maxPrice
+        && (!selectedStore || normalizeStoreName(summary.bestStore.name) === selectedStore)
+      );
+      const bestDeal = visible[0] || allSummaries[0];
+      renderBestDeal(bestDeal);
+      renderStats(buildStats(allSummaries, visible));
+      renderDeals(visible);
+    }
+
+    priceFilter.addEventListener("change", applyFilter);
+    storeFilter.addEventListener("change", applyFilter);
+    applyFilter();
+
     document.querySelector("#last-updated").textContent = `Last updated ${dateFormatter.format(new Date(data.lastUpdated))}`;
   } catch (error) {
     document.querySelector("#deals-grid").innerHTML =

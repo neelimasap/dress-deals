@@ -47,7 +47,21 @@
             <p class="eyebrow">Watchlist</p>
             <h2>Current markdowns</h2>
           </div>
-          <p id="last-updated" class="section-meta"></p>
+          <div class="section-meta-group">
+            <div class="filters-row">
+              <select id="store-filter" class="price-filter">
+                <option value="">All stores</option>
+              </select>
+              <select id="price-filter" class="price-filter">
+                <option value="">All prices</option>
+                <option value="500">Up to $500</option>
+                <option value="750">Up to $750</option>
+                <option value="1000">Up to $1,000</option>
+                <option value="1500" selected>Up to $1,500</option>
+              </select>
+            </div>
+            <p id="last-updated" class="section-meta"></p>
+          </div>
         </section>
 
         <section id="deals-grid" class="deals-grid" aria-live="polite"></section>
@@ -67,22 +81,16 @@
           <span class="discount-pill"></span>
         </div>
         <p class="item-meta"></p>
-        <div class="price-row">
-          <div>
-            <p class="price-label">Lowest price</p>
-            <p class="lowest-price"></p>
+        <div class="offer-summary">
+          <div class="offer-copy">
+            <span class="offer-store"></span>
+            <span class="offer-updated"></span>
           </div>
-          <div>
-            <p class="price-label">Best store</p>
-            <p class="best-store"></p>
+          <div class="offer-pricing">
+            <span class="offer-price"></span>
+            <span class="offer-original"></span>
           </div>
         </div>
-        <div class="sparkline-block">
-          <p class="price-label">Price history</p>
-          <div class="sparkline"></div>
-          <div class="history-labels"></div>
-        </div>
-        <div class="store-list"></div>
       </article>
     </template>
 
