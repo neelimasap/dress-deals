@@ -12,7 +12,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 let deferredPrompt;
 
 async function loadDeals() {
-  const response = await fetch("../data/deals.json");
+  const response = await fetch("/data/deals.json");
 
   if (!response.ok) {
     throw new Error("Could not load deals data.");
@@ -243,7 +243,7 @@ async function registerServiceWorker() {
       return;
     }
 
-    await navigator.serviceWorker.register("../service-worker.js");
+    await navigator.serviceWorker.register("/service-worker.js");
   } catch (error) {
     console.error("Service worker registration failed", error);
   }
