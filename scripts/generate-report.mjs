@@ -14,9 +14,15 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 function summarizeBrand(brand) {
   return brand.items
     .map((item) => {
-      const bestStore = [...item.stores].sort((left, right) => left.price - right.price)[0];
+      const stores = item.stores || item.offers || [];
+      const bestStore = [...stores].sort((left, right) => left.price - right.price)[0];
+      if (!bestStore) {
+        return "";
+      }
       const discountPct = Math.round(((bestStore.originalPrice - bestStore.price) / bestStore.originalPrice) * 100);
-      const history = item.history.map((entry) => `${entry.date} - ${currencyFormatter.format(entry.price)}`).join("\n");
+      const history = (item.history || [])
+        .map((entry) => `${entry.date} - ${entry.store || "Unknown store"} - ${currencyFormatter.format(entry.price)}`)
+        .join("\n");
 
       return [
         `## ${item.name}`,
@@ -24,13 +30,19 @@ function summarizeBrand(brand) {
         `- Lowest price: ${currencyFormatter.format(bestStore.price)}`,
         `- Store: ${bestStore.name}`,
         `- Markdown: ${discountPct}% off`,
-        `- Material: ${item.material}`,
+        `- Release year: ${item.releaseYear ?? "Unknown"}`,
         "",
         "Price history:",
         history,
+        "",
+        "Store snapshots:",
+        (item.storeHistory || [])
+          .map((entry) => `${entry.date} - ${entry.store} - ${currencyFormatter.format(entry.price)}`)
+          .join("\n"),
         ""
       ].join("\n");
     })
+    .filter(Boolean)
     .join("\n");
 }
 

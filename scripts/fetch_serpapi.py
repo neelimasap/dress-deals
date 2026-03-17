@@ -7,7 +7,7 @@ import sys
 import urllib.parse
 import urllib.request
 from hashlib import sha1
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -24,16 +24,25 @@ WATCHLIST_PATH = PROJECT_ROOT / "config" / "watchlist.json"
 SERPAPI_URL = "https://serpapi.com/search.json"
 CACHE_TTL_HOURS = 24
 REQUEST_TIMEOUT_SECONDS = 20
-BRAND_NAME = "Zimmermann"
-BRAND_QUERY = "Zimmermann dress"
-FALLBACK_QUERY = "Zimmermann dresses"
-MAX_DAILY_QUERIES = 2
+DEFAULT_BRAND_NAME = "Zimmermann"
+DEFAULT_BRAND_QUERY = "Zimmermann dress"
+DEFAULT_FALLBACK_QUERY = "Zimmermann dresses"
+MAX_DAILY_QUERIES = 24
 DISCOVERY_RESULTS_LIMIT = 100
 MIN_PRIMARY_RESULTS = 24
 MIN_DISCOVERY_OFFERS = 3
 MAX_IMMERSIVE_CALLS_PER_RUN = 8
 YEAR_PATTERN = re.compile(r"\b(20\d{2})\b")
-DRESS_PATTERN = re.compile(r"\b(dress|gown|minidress|maxidress|mididress|shirtdress)\b", re.IGNORECASE)
+DEFAULT_PRODUCT_TERMS = {
+    "dress",
+    "gown",
+    "minidress",
+    "maxidress",
+    "mididress",
+    "shirtdress",
+    "tunic",
+    "skirt",
+}
 FILLER_PATTERN = re.compile(r"\b(by|womens|women|woman|size|new)\b", re.IGNORECASE)
 LEADING_DESCRIPTOR_PATTERN = re.compile(
     r"^(cream|dahlia|peony|mint|hibiscus|ivory|pink|blue|yellow|floral|printed)\s+",
@@ -49,7 +58,7 @@ NOISE_SOURCE_PATTERN = re.compile(
     r"\b(poshmark|ebay|born into money|bundesamt|naked pear)\b",
     re.IGNORECASE,
 )
-GENERIC_WORDS = {
+DEFAULT_GENERIC_WORDS = {
     "dress",
     "gown",
     "midi",
@@ -76,7 +85,7 @@ GENERIC_WORDS = {
     "tiered",
     "knot",
 }
-TOKEN_ALIASES = {
+DEFAULT_TOKEN_ALIASES = {
     "everley": "everly",
 }
 SOURCE_ALIASES = {
@@ -97,36 +106,197 @@ class StoreOffer:
     url: str
     image: str | None
     updated_at: str
+    source_category: str
 
 
-def load_watchlist_queries() -> list[str]:
+@dataclass(frozen=True)
+class BrandConfig:
+    name: str
+    queries: list[str]
+    primary_query: str
+    fallback_queries: list[str]
+    discovery_terms: list[str] = field(default_factory=list)
+    sale_modifiers: list[str] = field(default_factory=list)
+    generic_words: set[str] = field(default_factory=set)
+    token_aliases: dict[str, str] = field(default_factory=dict)
+    blocked_sources: set[str] = field(default_factory=set)
+    trusted_sources: set[str] = field(default_factory=set)
+    source_categories: dict[str, str] = field(default_factory=dict)
+    product_terms: set[str] = field(default_factory=set)
+    max_price: float | None = None
+    require_discount: bool = False
+    minimum_discount_percent: float = 0.0
+
+
+def normalize_query_list(values: list[Any]) -> list[str]:
+    queries: list[str] = []
+    for value in values:
+        normalized = str(value).strip()
+        if normalized and normalized not in queries:
+            queries.append(normalized)
+    return queries
+
+
+def default_brand_config() -> BrandConfig:
+    return BrandConfig(
+        name=DEFAULT_BRAND_NAME,
+        queries=[DEFAULT_BRAND_QUERY],
+        primary_query=DEFAULT_BRAND_QUERY,
+        fallback_queries=[DEFAULT_BRAND_QUERY, DEFAULT_FALLBACK_QUERY],
+        discovery_terms=[],
+        sale_modifiers=["sale", "discount", "markdown", "clearance", "outlet", "reduced"],
+        generic_words=set(DEFAULT_GENERIC_WORDS),
+        token_aliases=dict(DEFAULT_TOKEN_ALIASES),
+        product_terms=set(DEFAULT_PRODUCT_TERMS),
+    )
+
+
+def load_watchlist_payload() -> dict[str, Any] | None:
     if not WATCHLIST_PATH.exists():
-        return []
+        return None
 
     try:
         payload = load_json(WATCHLIST_PATH)
     except json.JSONDecodeError:
-        return []
+        return None
 
-    queries: list[str] = []
-    for brand in payload.get("brands", []):
-        if str(brand.get("name", "")).strip().lower() != BRAND_NAME.lower():
+    return payload if isinstance(payload, dict) else None
+
+
+def brand_config_from_entry(entry: dict[str, Any], fallback: BrandConfig) -> BrandConfig:
+    name = str(entry.get("name", "")).strip() or fallback.name
+    queries = normalize_query_list(entry.get("queries", []))
+    primary_query = queries[0] if queries else fallback.primary_query.replace(fallback.name, name)
+    fallback_queries = normalize_query_list(entry.get("fallbackQueries", []))
+    if not fallback_queries:
+        fallback_queries = normalize_query_list([f"{name} dress", f"{name} dresses"])
+
+    discovery_terms = normalize_query_list(entry.get("discoveryTerms", []))
+    sale_modifiers = normalize_query_list(entry.get("saleModifiers", [])) or list(fallback.sale_modifiers)
+
+    generic_words = set(fallback.generic_words)
+    generic_words.update(
+        str(word).strip().lower()
+        for word in entry.get("genericWords", [])
+        if str(word).strip()
+    )
+
+    token_aliases = dict(fallback.token_aliases)
+    raw_token_aliases = entry.get("tokenAliases", {})
+    if isinstance(raw_token_aliases, dict):
+        for raw_key, raw_value in raw_token_aliases.items():
+            key = str(raw_key).strip().lower()
+            value = str(raw_value).strip().lower()
+            if key and value:
+                token_aliases[key] = value
+
+    blocked_sources = {
+        normalize_source_name(source)
+        for source in entry.get("blockedSources", [])
+        if str(source).strip()
+    }
+    trusted_sources = {
+        normalize_source_name(source)
+        for source in entry.get("trustedSources", [])
+        if str(source).strip()
+    }
+    source_categories: dict[str, str] = {}
+    raw_source_categories = entry.get("sourceCategories", {})
+    if isinstance(raw_source_categories, dict):
+        for category, sources in raw_source_categories.items():
+            normalized_category = str(category).strip().lower()
+            if normalized_category not in {"retail", "aggregator", "resale"}:
+                continue
+            for source in sources or []:
+                normalized_source = normalize_source_name(str(source))
+                if normalized_source:
+                    source_categories[normalized_source] = normalized_category
+
+    max_price = parse_price(entry.get("maxPrice"))
+    require_discount = bool(entry.get("requireDiscount", False))
+    minimum_discount_percent = parse_price(entry.get("minimumDiscountPercent")) or 0.0
+    product_terms = set(fallback.product_terms)
+    product_terms.update(
+        str(term).strip().lower()
+        for term in entry.get("productTerms", [])
+        if str(term).strip()
+    )
+
+    return BrandConfig(
+        name=name,
+        queries=queries or [primary_query],
+        primary_query=primary_query,
+        fallback_queries=fallback_queries,
+        discovery_terms=discovery_terms,
+        sale_modifiers=sale_modifiers,
+        generic_words=generic_words,
+        token_aliases=token_aliases,
+        blocked_sources=blocked_sources,
+        trusted_sources=trusted_sources,
+        source_categories=source_categories,
+        product_terms=product_terms,
+        max_price=max_price,
+        require_discount=require_discount,
+        minimum_discount_percent=minimum_discount_percent,
+    )
+
+
+def load_brand_configs() -> list[BrandConfig]:
+    fallback = default_brand_config()
+    payload = load_watchlist_payload()
+    if payload is None:
+        return [fallback]
+
+    brands = payload.get("brands", [])
+    if not isinstance(brands, list):
+        return [fallback]
+
+    configs: list[BrandConfig] = []
+    for brand in brands:
+        if not isinstance(brand, dict) or not str(brand.get("name", "")).strip():
             continue
-        for query in brand.get("queries", []):
-            normalized = str(query).strip()
-            if normalized and normalized not in queries:
-                queries.append(normalized)
-    return queries
+        configs.append(brand_config_from_entry(brand, fallback))
+
+    return configs or [fallback]
+
+def load_brand_config() -> BrandConfig:
+    configs = load_brand_configs()
+    for config in configs:
+        if config.name.lower() == DEFAULT_BRAND_NAME.lower():
+            return config
+    return configs[0]
 
 
-def watchlist_model_tokens() -> set[str]:
+def watchlist_model_tokens(brand: BrandConfig) -> set[str]:
     tokens: set[str] = set()
-    for query in load_watchlist_queries():
-        normalized = normalize_title(query)
-        for token in canonical_tokens(normalized):
-            if token not in GENERIC_WORDS and len(token) >= 4:
+    for query in brand.queries:
+        normalized = normalize_title(query, brand)
+        for token in canonical_tokens(normalized, brand):
+            if token not in brand.generic_words and len(token) >= 4:
                 tokens.add(token)
     return tokens
+
+
+def has_product_signal(text: str, brand: BrandConfig) -> bool:
+    normalized_text = normalize_title(text, brand)
+    tokens = set(canonical_tokens(normalized_text, brand))
+    return bool(tokens & brand.product_terms)
+
+
+def build_discovery_queries(brand: BrandConfig) -> list[str]:
+    queries = normalize_query_list(brand.queries or [brand.primary_query])
+    generated: list[str] = []
+
+    for term in brand.discovery_terms:
+        base = f"{brand.name} {term}".strip()
+        generated.append(base)
+        for modifier in brand.sale_modifiers:
+            generated.append(f"{base} {modifier}".strip())
+
+    for fallback_query in brand.fallback_queries:
+        generated.append(fallback_query)
+
+    return normalize_query_list([*queries, *generated])[:MAX_DAILY_QUERIES]
 
 
 def load_cached_results(query: str) -> list[dict[str, Any]] | None:
@@ -242,34 +412,56 @@ def extract_release_year(result: dict[str, Any], now: datetime) -> int | None:
     return max(years)
 
 
-def looks_like_zimmermann_dress(result: dict[str, Any]) -> bool:
+def looks_like_brand_dress(result: dict[str, Any], brand: BrandConfig) -> bool:
     text_blob = get_text_blob(result)
-    normalized_blob = normalize_title(text_blob)
-    has_dress_signal = bool(DRESS_PATTERN.search(text_blob))
+    normalized_blob = normalize_title(text_blob, brand)
+    has_dress_signal = has_product_signal(text_blob, brand)
 
-    if BRAND_NAME.lower() in text_blob.lower() and has_dress_signal:
+    if brand.name.lower() in text_blob.lower() and has_dress_signal:
         return True
 
     if not has_dress_signal:
         return False
 
-    tracked_tokens = watchlist_model_tokens()
+    tracked_tokens = watchlist_model_tokens(brand)
     if not tracked_tokens:
         return False
 
-    blob_tokens = set(canonical_tokens(normalized_blob))
+    blob_tokens = set(canonical_tokens(normalized_blob, brand))
     return bool(blob_tokens & tracked_tokens)
 
 
-def looks_like_noise(result: dict[str, Any]) -> bool:
+def source_is_allowed(source_name: str, brand: BrandConfig) -> bool:
+    normalized = normalize_source_name(source_name)
+    if normalized in brand.blocked_sources:
+        return False
+    return True
+
+
+def source_preference_rank(source_name: str, brand: BrandConfig | None = None) -> int:
+    if brand is None:
+        return 1
+    return 0 if normalize_source_name(source_name) in brand.trusted_sources else 1
+
+
+def source_category(source_name: str, brand: BrandConfig) -> str:
+    normalized = normalize_source_name(source_name)
+    return brand.source_categories.get(normalized, "aggregator")
+
+
+def looks_like_noise(result: dict[str, Any], brand: BrandConfig) -> bool:
     title = str(result.get("title", ""))
     source = str(result.get("source", ""))
-    return bool(NOISE_TITLE_PATTERN.search(title) or NOISE_SOURCE_PATTERN.search(source))
+    return bool(
+        NOISE_TITLE_PATTERN.search(title)
+        or NOISE_SOURCE_PATTERN.search(source)
+        or not source_is_allowed(source, brand)
+    )
 
 
-def normalize_item_name(title: str) -> str:
+def normalize_item_name(title: str, brand: BrandConfig) -> str:
     name = title.strip()
-    name = re.sub(rf"^{BRAND_NAME}\s*[,.-]?\s*", "", name, flags=re.IGNORECASE)
+    name = re.sub(rf"^{re.escape(brand.name)}\s*[,.-]?\s*", "", name, flags=re.IGNORECASE)
     name = re.sub(r"^women'?s\s+", "", name, flags=re.IGNORECASE)
     name = re.split(r"\s+\|\s+|\s+-\s+", name, maxsplit=1)[0]
     name = re.sub(r",\s*women.*$", "", name, flags=re.IGNORECASE)
@@ -281,13 +473,13 @@ def normalize_item_name(title: str) -> str:
     name = re.sub(r"\bmini\s+dress\b", "midi dress", name, flags=re.IGNORECASE)
     name = re.sub(r"\bdrawn\s+illuminate\b", "illuminate drawn", name, flags=re.IGNORECASE)
     name = re.sub(r"\s+", " ", name).strip(" ,.-")
-    if not name.lower().startswith(BRAND_NAME.lower()):
-        name = f"{BRAND_NAME} {name}"
+    if not name.lower().startswith(brand.name.lower()):
+        name = f"{brand.name} {name}"
     return name
 
 
-def normalize_title(title: str) -> str:
-    cleaned = title.lower().replace(BRAND_NAME.lower(), " ")
+def normalize_title(title: str, brand: BrandConfig) -> str:
+    cleaned = title.lower().replace(brand.name.lower(), " ")
     cleaned = FILLER_PATTERN.sub(" ", cleaned)
     cleaned = re.sub(r"[^a-z0-9 ]", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
@@ -300,10 +492,10 @@ def product_slug(normalized_title: str) -> str:
     return "-".join(important)
 
 
-def canonical_tokens(normalized_title: str) -> list[str]:
+def canonical_tokens(normalized_title: str, brand: BrandConfig) -> list[str]:
     tokens: list[str] = []
     for raw_token in normalized_title.split():
-        token = TOKEN_ALIASES.get(raw_token, raw_token)
+        token = brand.token_aliases.get(raw_token, raw_token)
         if token.isdigit():
             continue
         if len(token) <= 1:
@@ -312,13 +504,13 @@ def canonical_tokens(normalized_title: str) -> list[str]:
     return tokens
 
 
-def canonical_model_key(normalized_title: str) -> str:
-    tokens = canonical_tokens(normalized_title)
+def canonical_model_key(normalized_title: str, brand: BrandConfig) -> str:
+    tokens = canonical_tokens(normalized_title, brand)
     if not tokens:
         return ""
 
     for token in tokens:
-        if token not in GENERIC_WORDS:
+        if token not in brand.generic_words:
             return token
 
     return ""
@@ -342,7 +534,7 @@ def find_group_key(grouped: dict[str, dict[str, Any]], normalized_title: str, mo
     return None
 
 
-def build_offer(result: dict[str, Any], timestamp: str) -> StoreOffer | None:
+def build_offer(result: dict[str, Any], timestamp: str, brand: BrandConfig) -> StoreOffer | None:
     current_price = (
         parse_price(result.get("extracted_total"))
         or parse_price(result.get("base_price"))
@@ -361,14 +553,29 @@ def build_offer(result: dict[str, Any], timestamp: str) -> StoreOffer | None:
     if current_price is None:
         return None
 
+    source_name = str(result.get("seller_name") or result.get("source") or result.get("name") or "Unknown store")
     return StoreOffer(
-        name=str(result.get("seller_name") or result.get("source") or result.get("name") or "Unknown store"),
+        name=source_name,
         price=current_price,
         original_price=original_price or current_price,
         url=str(result.get("product_link") or result.get("seller_link") or result.get("direct_link") or result.get("link") or ""),
         image=result.get("thumbnail") or result.get("serpapi_thumbnail") or result.get("image"),
         updated_at=timestamp,
+        source_category=source_category(source_name, brand),
     )
+
+
+def offer_within_brand_rules(offer: StoreOffer, brand: BrandConfig) -> bool:
+    if not source_is_allowed(offer.name, brand):
+        return False
+    if brand.max_price is not None and offer.price > brand.max_price:
+        return False
+    if brand.require_discount:
+        if offer.original_price > offer.price:
+            discount_percent = ((offer.original_price - offer.price) / offer.original_price) * 100
+            if discount_percent < brand.minimum_discount_percent:
+                return False
+    return True
 
 
 def get_page_token(result: dict[str, Any]) -> str | None:
@@ -449,21 +656,43 @@ def merge_store_history(
 ) -> list[dict[str, Any]]:
     merged: dict[tuple[str, str], dict[str, Any]] = {}
 
+    def should_replace(existing: dict[str, Any], candidate: dict[str, Any]) -> bool:
+        existing_price = float(existing.get("price", float("inf")))
+        candidate_price = float(candidate.get("price", float("inf")))
+        if candidate_price != existing_price:
+            return candidate_price < existing_price
+
+        existing_original = float(existing.get("originalPrice", float("inf")))
+        candidate_original = float(candidate.get("originalPrice", float("inf")))
+        if candidate_original != existing_original:
+            return candidate_original < existing_original
+
+        return len(str(candidate.get("url", ""))) > len(str(existing.get("url", "")))
+
     for entry in previous_store_history:
         store_name = str(entry.get("store", "")).strip()
         date = str(entry.get("date", "")).strip()
         if not store_name or not date:
             continue
-        merged[(date, normalize_source_name(store_name))] = dict(entry)
+        key = (date, normalize_source_name(store_name))
+        candidate = dict(entry)
+        existing = merged.get(key)
+        if existing is None or should_replace(existing, candidate):
+            merged[key] = candidate
 
     for offer in offers:
-        merged[(today, normalize_source_name(offer.name))] = {
+        key = (today, normalize_source_name(offer.name))
+        candidate = {
             "date": today,
             "store": offer.name,
             "price": offer.price,
             "originalPrice": offer.original_price,
             "url": offer.url,
+            "sourceCategory": offer.source_category,
         }
+        existing = merged.get(key)
+        if existing is None or should_replace(existing, candidate):
+            merged[key] = candidate
 
     return sorted(
         merged.values(),
@@ -471,7 +700,7 @@ def merge_store_history(
     )
 
 
-def load_previous_items() -> dict[str, dict[str, Any]]:
+def load_previous_payload() -> dict[str, Any]:
     if not DEALS_PATH.exists():
         return {}
 
@@ -480,19 +709,23 @@ def load_previous_items() -> dict[str, dict[str, Any]]:
     except json.JSONDecodeError:
         return {}
 
-    if isinstance(payload, dict) and "items" in payload:
+    return payload if isinstance(payload, dict) else {}
+
+
+def previous_items_for_brand(payload: dict[str, Any], brand_name: str) -> dict[str, dict[str, Any]]:
+    if payload.get("brand") == brand_name and isinstance(payload.get("items"), list):
         return {item.get("id", item["name"]): item for item in payload.get("items", [])}
 
     previous_items: dict[str, dict[str, Any]] = {}
     for brand in payload.get("brands", []):
-        if brand.get("name") != BRAND_NAME:
+        if brand.get("name") != brand_name:
             continue
         for item in brand.get("items", []):
             previous_items[item.get("id", item["name"])] = item
     return previous_items
 
 
-def dedupe_offers(offers: list[StoreOffer]) -> list[StoreOffer]:
+def dedupe_offers(offers: list[StoreOffer], brand: BrandConfig | None = None) -> list[StoreOffer]:
     deduped: dict[tuple[str, float, str], StoreOffer] = {}
     for offer in offers:
         key = (
@@ -503,7 +736,10 @@ def dedupe_offers(offers: list[StoreOffer]) -> list[StoreOffer]:
         previous = deduped.get(key)
         if previous is None or len(offer.url) > len(previous.url):
             deduped[key] = offer
-    return sorted(deduped.values(), key=lambda offer: (offer.price, offer.name))
+    return sorted(
+        deduped.values(),
+        key=lambda offer: (offer.price, source_preference_rank(offer.name, brand), offer.name),
+    )
 
 
 def merge_item_records(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -544,6 +780,7 @@ def merge_item_records(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 url=offer["url"],
                 image=offer.get("imageUrl"),
                 updated_at=offer["updatedAt"],
+                source_category=offer.get("sourceCategory", "aggregator"),
             )
             for offer in [*duplicate.get("offers", []), *item.get("offers", [])]
         ]
@@ -556,6 +793,7 @@ def merge_item_records(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "url": offer.url,
                 "imageUrl": offer.image,
                 "updatedAt": offer.updated_at,
+                "sourceCategory": offer.source_category,
             }
             for offer in deduped_combined
         ]
@@ -594,27 +832,30 @@ def map_items(
     timestamp: str,
     previous_items: dict[str, dict[str, Any]],
     api_key: str | None,
+    brand: BrandConfig,
 ) -> list[dict[str, Any]]:
     now = datetime.now().astimezone()
     grouped: dict[str, dict[str, Any]] = {}
 
     for result in results:
-        if not looks_like_zimmermann_dress(result):
+        if not looks_like_brand_dress(result, brand):
             continue
-        if looks_like_noise(result):
+        if looks_like_noise(result, brand):
             continue
 
         title = str(result.get("title", "")).strip()
         if not title:
             continue
 
-        offer = build_offer(result, timestamp)
+        offer = build_offer(result, timestamp, brand)
         if offer is None:
             continue
+        if not offer_within_brand_rules(offer, brand):
+            continue
 
-        item_name = normalize_item_name(title)
-        normalized_title = normalize_title(item_name)
-        model_key = canonical_model_key(normalized_title)
+        item_name = normalize_item_name(title, brand)
+        normalized_title = normalize_title(item_name, brand)
+        model_key = canonical_model_key(normalized_title, brand)
         slug = product_slug(normalized_title)
         if not slug:
             continue
@@ -653,12 +894,12 @@ def map_items(
                 if not immersive_offers:
                     continue
                 for immersive_offer in immersive_offers:
-                    offer = build_offer(immersive_offer, timestamp)
-                    if offer is not None:
+                    offer = build_offer(immersive_offer, timestamp, brand)
+                    if offer is not None and offer_within_brand_rules(offer, brand):
                         entry["offers"].append(offer)
                 immersive_calls += 1
                 break
-        offers = dedupe_offers(entry["offers"])
+        offers = dedupe_offers(entry["offers"], brand)
         if not offers:
             continue
 
@@ -687,6 +928,7 @@ def map_items(
                         "url": offer.url,
                         "imageUrl": offer.image,
                         "updatedAt": offer.updated_at,
+                        "sourceCategory": offer.source_category,
                     }
                     for offer in offers
                 ],
@@ -698,13 +940,13 @@ def map_items(
     return sorted(merge_item_records(items), key=lambda item: item["cheapestPrice"])
 
 
-def gather_discovery_results(api_key: str | None) -> list[dict[str, Any]]:
-    queries = load_watchlist_queries() or [BRAND_QUERY]
+def gather_discovery_results(api_key: str | None, brand: BrandConfig) -> list[dict[str, Any]]:
+    queries = build_discovery_queries(brand)
     primary_query = queries[0]
     results = fetch_shopping_results(primary_query, api_key)
 
     if len(results) < MIN_PRIMARY_RESULTS and MAX_DAILY_QUERIES > 1:
-        for fallback_query in [BRAND_QUERY, FALLBACK_QUERY]:
+        for fallback_query in brand.fallback_queries:
             if fallback_query not in queries:
                 queries.append(fallback_query)
             if len(queries) >= MAX_DAILY_QUERIES:
@@ -723,16 +965,24 @@ def gather_discovery_results(api_key: str | None) -> list[dict[str, Any]]:
 def collect() -> dict[str, Any]:
     load_env_file(ENV_PATH)
     api_key = os.getenv("SERPAPI_API_KEY")
-
-    previous_items = load_previous_items()
     timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
-    results = gather_discovery_results(api_key)
-    items = map_items(results, timestamp, previous_items, api_key)
+    previous_payload = load_previous_payload()
+    brands_payload: list[dict[str, Any]] = []
+
+    for brand in load_brand_configs():
+        previous_items = previous_items_for_brand(previous_payload, brand.name)
+        results = gather_discovery_results(api_key, brand)
+        items = map_items(results, timestamp, previous_items, api_key, brand)
+        brands_payload.append(
+            {
+                "name": brand.name,
+                "items": items,
+            }
+        )
 
     return {
-        "brand": BRAND_NAME,
         "lastUpdated": timestamp,
-        "items": items,
+        "brands": brands_payload,
     }
 
 

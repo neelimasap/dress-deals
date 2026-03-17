@@ -4,19 +4,121 @@
     {
       "name": "Zimmermann",
       "queries": [
-        "Zimmermann Illuminate Dress",
-        "Zimmermann Everly Dress",
-        "Zimmermann Luna Ruffle Linen Silk Midi Dress",
-        "Zimmermann Cutout floral-print linen midi dress",
-        "Zimmermann Illuminate Drawn Slip Dress",
-        "Zimmermann Drawn Slip Dress",
-        "Zimmermann Cutout floral print midi dress",
-        "Zimmermann Luna Ruffle Midi Dress",
-        "Zimmermann Rebellion Marine Mini Dress",
-        "Zimmermann Ascension Mini Dress",
-        "Zimmermann Luna Lace Lantern Dress",
-        "Zimmermann Tallow Plunge Mini Dress"
-      ]
+        "Zimmermann dress on sale",
+        "Zimmermann dresses sale discount",
+        "Zimmermann dress markdown",
+        "Zimmermann dress clearance",
+        "Zimmermann dress outlet",
+        "Zimmermann dress reduced"
+      ],
+      "fallbackQueries": [
+        "Zimmermann dress",
+        "Zimmermann dresses"
+      ],
+      "saleModifiers": [
+        "sale",
+        "discount",
+        "markdown",
+        "clearance",
+        "outlet",
+        "reduced"
+      ],
+      "discoveryTerms": [
+        "midi dress",
+        "mini dress",
+        "maxi dress",
+        "slip dress",
+        "floral dress",
+        "printed dress",
+        "white dress",
+        "ivory dress",
+        "cream dress",
+        "linen dress",
+        "silk dress",
+        "cotton dress",
+        "tunic dress",
+        "cutout dress",
+        "ruffled dress",
+        "tiered dress",
+        "batwing dress",
+        "plisse organza dress",
+        "drawn dress",
+        "illuminate dress",
+        "daylight dress",
+        "skirt",
+        "midi skirt",
+        "floral skirt"
+      ],
+      "tokenAliases": {
+        "everley": "everly"
+      },
+      "genericWords": [
+        "linen",
+        "silk",
+        "floral"
+      ],
+      "productTerms": [
+        "dress",
+        "gown",
+        "tunic",
+        "skirt"
+      ],
+      "blockedSources": [
+        "Poshmark",
+        "eBay",
+        "Mercari",
+        "Grailed"
+      ],
+      "trustedSources": [
+        "Zimmermann",
+        "Saks Fifth Avenue",
+        "NET-A-PORTER",
+        "THE OUTNET",
+        "Mytheresa",
+        "Farfetch",
+        "Bloomingdale's",
+        "Neiman Marcus",
+        "Nordstrom",
+        "FWRD",
+        "Cettire",
+        "Selfridges",
+        "Marissa Collections"
+      ],
+      "sourceCategories": {
+        "retail": [
+          "Zimmermann",
+          "Saks Fifth Avenue",
+          "NET-A-PORTER",
+          "THE OUTNET",
+          "Mytheresa",
+          "Farfetch",
+          "Bloomingdale's",
+          "Neiman Marcus",
+          "Nordstrom",
+          "FWRD",
+          "Cettire",
+          "Selfridges",
+          "Marissa Collections"
+        ],
+        "aggregator": [
+          "Lyst",
+          "Editorialist",
+          "ModeSens",
+          "ShopSimon",
+          "Stylight Inc.",
+          "BeyondStyle",
+          "Realry"
+        ],
+        "resale": [
+          "The RealReal",
+          "Vestiaire Collective",
+          "The Luxury Closet US",
+          "Joli Closet"
+        ]
+      },
+      "maxPrice": 5000,
+      "requireDiscount": true,
+      "minimumDiscountPercent": 5
     }
   ]
 }

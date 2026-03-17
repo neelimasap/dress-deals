@@ -23,18 +23,31 @@
     <div class="page-shell">
       <header class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Luxury markdown tracker</p>
-          <h1>Quietly catch the best dress drops before they disappear.</h1>
+          <p class="eyebrow">AI Buyer For Fashion Obsessions</p>
+          <h1>Find the exact dress. Buy it at the smartest price.</h1>
           <p class="hero-text">
-            Share a clean, phone-friendly dashboard that highlights the best markdowns across a small set of brands.
+            This is not another shopping grid. It is a decision engine for your Zimmermann hunt: one canonical dress,
+            the best current buy, and a clear signal on whether to buy now or keep watching.
           </p>
+          <form id="intent-form" class="intent-form">
+            <label class="intent-label" for="intent-input">What are you looking for?</label>
+            <div class="intent-row">
+              <input
+                id="intent-input"
+                class="intent-input"
+                type="search"
+                placeholder="white floral midi, slip dress, wedding guest, daytime..."
+              />
+              <button type="submit" class="button button-primary">Find Best Buys</button>
+            </div>
+          </form>
           <div class="hero-actions">
             <button id="install-button" class="button button-primary" hidden>Add to Home Screen</button>
             <a class="button button-secondary" href="reports/daily-deals.md">Open daily report</a>
           </div>
         </div>
         <aside class="hero-panel">
-          <p class="panel-label">Today's best deal</p>
+          <p class="panel-label">Best Current Buy</p>
           <div id="best-deal" class="best-deal-card"></div>
         </aside>
       </header>
@@ -42,13 +55,28 @@
       <main>
         <section class="stats-grid" id="stats-grid" aria-label="Overview"></section>
 
+        <section class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Recommendation Queue</p>
+            <h2>What To Buy Right Now</h2>
+          </div>
+        </section>
+
+        <section id="recommendations-grid" class="deals-grid recommendations-grid" aria-live="polite"></section>
+
         <section class="section-heading">
           <div>
-            <p class="eyebrow">Watchlist</p>
-            <h2>Current markdowns</h2>
+            <p class="eyebrow">Market Sweep</p>
+            <h2>Best Buys Across The Market</h2>
           </div>
           <div class="section-meta-group">
             <div class="filters-row">
+              <select id="brand-filter" class="price-filter">
+                <option value="">All brands</option>
+              </select>
+              <select id="source-filter" class="price-filter">
+                <option value="">All source types</option>
+              </select>
               <select id="store-filter" class="price-filter">
                 <option value="">All stores</option>
               </select>
@@ -57,7 +85,7 @@
                 <option value="500">Up to $500</option>
                 <option value="750">Up to $750</option>
                 <option value="1000">Up to $1,000</option>
-                <option value="1500" selected>Up to $1,500</option>
+                <option value="1500">Up to $1,500</option>
               </select>
             </div>
             <p id="last-updated" class="section-meta"></p>
@@ -65,6 +93,7 @@
         </section>
 
         <section id="deals-grid" class="deals-grid" aria-live="polite"></section>
+        <p id="empty-state" class="empty-state" hidden>No dresses match this buying brief right now.</p>
       </main>
     </div>
 
@@ -80,11 +109,10 @@
           </div>
           <span class="discount-pill"></span>
         </div>
-        <p class="item-meta"></p>
         <div class="offer-summary">
           <div class="offer-copy">
             <span class="offer-store"></span>
-            <span class="offer-updated"></span>
+            <span class="offer-secondary"></span>
           </div>
           <div class="offer-pricing">
             <span class="offer-price"></span>
