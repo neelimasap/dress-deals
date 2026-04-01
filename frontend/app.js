@@ -277,14 +277,9 @@ function populateCard(node, entity) {
     : "";
 
   if (imageUrl) {
-    const imageLink = document.createElement("a");
-    imageLink.href = entity.bestStore.url;
-    imageLink.target = "_blank";
-    imageLink.rel = "noreferrer";
     image.src = imageUrl;
     image.alt = entity.item.name;
-    imageShell.appendChild(imageLink);
-    imageLink.appendChild(image);
+    imageShell.appendChild(image);
     imageShell.hidden = false;
     image.addEventListener("error", () => {
       imageShell.hidden = true;
