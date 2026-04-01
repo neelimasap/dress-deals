@@ -423,65 +423,79 @@ h1 {
   }
 
   .offer-summary {
-    font-size: 1rem;
+    font-size: 0.94rem;
   }
 
   .deals-grid {
-    display: flex;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    padding-bottom: 8px;
-    gap: 10px;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .deal-card {
-    flex: 0 0 30vw;
-    min-height: 230px;
     padding: 8px;
-    overflow: hidden;
-    scroll-snap-align: start;
-    transition: flex-basis 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-  }
-
-  .deal-card.is-featured {
-    flex-basis: 78vw;
-    padding: 12px;
-  }
-
-  .deal-card:not(.is-featured) .deal-card-header,
-  .deal-card:not(.is-featured) .offer-summary {
-    max-height: 0;
-    margin-top: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    border-width: 0;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(8px);
+    border-radius: 18px;
   }
 
   .deal-image-shell {
     aspect-ratio: 3 / 4;
-    margin-bottom: 0;
+    margin-bottom: 8px;
+    border-radius: 14px;
   }
 
-  .deal-card.is-featured .deal-image-shell {
-    margin-bottom: 12px;
+  .deal-card-header {
+    flex-direction: column;
+    gap: 6px;
   }
 
-  .deal-card:not(.is-featured) .deal-image-shell {
-    height: 100%;
+  .brand-name {
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
   }
 
-  .deal-card:not(.is-featured) .deal-image {
-    object-position: center top;
+  .item-name {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 1rem;
+    line-height: 1.02;
+    min-height: 2.05em;
   }
 
-  .deal-card-header,
+  .discount-pill {
+    padding: 4px 8px;
+    font-size: 0.68rem;
+  }
+
   .offer-summary {
-    transition: opacity 140ms ease, transform 140ms ease;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .offer-pricing {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .offer-store a {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.84rem;
+  }
+
+  .offer-price {
+    font-size: 1.2rem;
+  }
+
+  .offer-original,
+  .offer-secondary {
+    font-size: 0.74rem;
   }
 }

@@ -277,9 +277,14 @@ function populateCard(node, entity) {
     : "";
 
   if (imageUrl) {
+    const imageLink = document.createElement("a");
+    imageLink.href = entity.bestStore.url;
+    imageLink.target = "_blank";
+    imageLink.rel = "noreferrer";
     image.src = imageUrl;
     image.alt = entity.item.name;
-    imageShell.appendChild(image);
+    imageShell.appendChild(imageLink);
+    imageLink.appendChild(image);
     imageShell.hidden = false;
     image.addEventListener("error", () => {
       imageShell.hidden = true;
@@ -296,43 +301,6 @@ function renderEntityGrid(selector, entities) {
     return node.querySelector(".deal-card");
   });
   grid.replaceChildren(...cards);
-  enableCompactMobileRail(grid);
-}
-
-function enableCompactMobileRail(grid) {
-  const isMobile = window.matchMedia("(max-width: 560px)").matches;
-  const cards = [...grid.querySelectorAll(".deal-card")];
-
-  if (!cards.length) {
-    return;
-  }
-
-  cards.forEach((card, index) => {
-    card.classList.toggle("is-featured", isMobile && index === 0);
-    card.tabIndex = 0;
-  });
-
-  if (!isMobile) {
-    return;
-  }
-
-  function activateCard(card) {
-    cards.forEach((entry) => entry.classList.toggle("is-featured", entry === card));
-    card.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  }
-
-  cards.forEach((card) => {
-    card.addEventListener("click", (event) => {
-      if (event.target.closest("a, button, input, select, textarea")) {
-        return;
-      }
-      activateCard(card);
-    });
-
-    card.addEventListener("focusin", () => {
-      activateCard(card);
-    });
-  });
 }
 
 function registerInstallPrompt() {
