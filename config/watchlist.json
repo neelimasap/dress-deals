@@ -228,6 +228,118 @@
       "maxPrice": 10000,
       "requireDiscount": true,
       "minimumDiscountPercent": 5
+    },
+    {
+      "name": "Self-Portrait",
+      "queries": [
+        "Self-Portrait dress on sale",
+        "Self-Portrait clothing sale",
+        "Self-Portrait dress markdown",
+        "Self-Portrait skirt sale",
+        "Self-Portrait top sale",
+        "Self-Portrait outlet"
+      ],
+      "fallbackQueries": [
+        "Self-Portrait dress",
+        "Self-Portrait clothing"
+      ],
+      "saleModifiers": [
+        "sale",
+        "discount",
+        "markdown",
+        "clearance",
+        "outlet",
+        "reduced"
+      ],
+      "discoveryTerms": [
+        "midi dress",
+        "mini dress",
+        "maxi dress",
+        "lace dress",
+        "knit dress",
+        "boucle dress",
+        "sequin dress",
+        "party dress",
+        "occasion dress",
+        "floral dress",
+        "skirt",
+        "midi skirt",
+        "mini skirt",
+        "top",
+        "cardigan",
+        "jacket"
+      ],
+      "tokenAliases": {
+        "selfportrait": "self-portrait"
+      },
+      "genericWords": [
+        "lace",
+        "knit",
+        "boucle",
+        "floral"
+      ],
+      "productTerms": [
+        "dress",
+        "gown",
+        "skirt",
+        "top",
+        "cardigan",
+        "jacket"
+      ],
+      "blockedSources": [
+        "Poshmark",
+        "eBay",
+        "Mercari",
+        "Grailed"
+      ],
+      "trustedSources": [
+        "Self-Portrait",
+        "Saks Fifth Avenue",
+        "NET-A-PORTER",
+        "THE OUTNET",
+        "Mytheresa",
+        "Farfetch",
+        "Bloomingdale's",
+        "Nordstrom",
+        "Neiman Marcus",
+        "Harrods",
+        "Selfridges",
+        "Revolve"
+      ],
+      "sourceCategories": {
+        "retail": [
+          "Self-Portrait",
+          "Saks Fifth Avenue",
+          "NET-A-PORTER",
+          "THE OUTNET",
+          "Mytheresa",
+          "Farfetch",
+          "Bloomingdale's",
+          "Nordstrom",
+          "Neiman Marcus",
+          "Harrods",
+          "Selfridges",
+          "Revolve"
+        ],
+        "aggregator": [
+          "Lyst",
+          "Editorialist",
+          "ModeSens",
+          "ShopSimon",
+          "Stylight Inc.",
+          "BeyondStyle",
+          "Realry"
+        ],
+        "resale": [
+          "The RealReal",
+          "Vestiaire Collective",
+          "The Luxury Closet US",
+          "Joli Closet"
+        ]
+      },
+      "maxPrice": 5000,
+      "requireDiscount": true,
+      "minimumDiscountPercent": 5
     }
   ]
 }
