@@ -406,6 +406,10 @@ h1 {
     padding-top: 20px;
   }
 
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .hero-copy,
   .hero-panel,
   .deal-card,
@@ -420,5 +424,25 @@ h1 {
 
   .offer-summary {
     font-size: 1rem;
+  }
+
+  .deals-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(78vw, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .deal-card {
+    scroll-snap-align: start;
+  }
+
+  .deal-image-shell {
+    aspect-ratio: 3 / 4;
   }
 }
