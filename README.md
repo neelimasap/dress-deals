@@ -24,6 +24,21 @@ node scripts/serve.mjs
 
 Open `http://localhost:4173`.
 
+## Refresh Button
+
+The site refresh button queues the GitHub Actions `daily-refresh.yml` workflow instead of updating data in-place.
+
+Set these environment variables in Vercel and local preview if you want the button to work:
+
+```bash
+GITHUB_TOKEN=...
+GITHUB_REPOSITORY=neelimasap/dress-deals
+GITHUB_REFRESH_WORKFLOW=daily-refresh.yml
+GITHUB_REFRESH_REF=main
+```
+
+The GitHub token must be allowed to dispatch Actions workflows for the target repository.
+
 ## Free Hosting
 
 You can host the frontend for free with:

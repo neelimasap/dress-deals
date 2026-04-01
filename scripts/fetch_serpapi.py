@@ -22,7 +22,7 @@ CACHE_DIR = PROJECT_ROOT / "data" / "cache"
 ENV_PATH = PROJECT_ROOT / ".env"
 WATCHLIST_PATH = PROJECT_ROOT / "config" / "watchlist.json"
 SERPAPI_URL = "https://serpapi.com/search.json"
-CACHE_TTL_HOURS = 24
+CACHE_TTL_HOURS = 168  # 7 days instead of 24 hours
 REQUEST_TIMEOUT_SECONDS = 20
 DEFAULT_BRAND_NAME = "Zimmermann"
 DEFAULT_BRAND_QUERY = "Zimmermann dress"
@@ -49,7 +49,7 @@ LEADING_DESCRIPTOR_PATTERN = re.compile(
     re.IGNORECASE,
 )
 TRAILING_SIZE_PATTERN = re.compile(r"\b(xxs|xs|s|m|l|xl|xxl)\b$", re.IGNORECASE)
-FUZZY_MATCH_THRESHOLD = 0.9
+FUZZY_MATCH_THRESHOLD = 0.85
 NOISE_TITLE_PATTERN = re.compile(
     r"\b(nwt|kids|closet|preowned|pre-owned|used|affare del giorno|sz\b|op\b)\b",
     re.IGNORECASE,
@@ -357,9 +357,37 @@ def fetch_shopping_results(query: str, api_key: str | None) -> list[dict[str, An
     if cached is not None:
         return cached
 
-    if not api_key:
-        raise RuntimeError("SERPAPI_API_KEY is not set and no fresh cache is available.")
+    # Try SerpAPI first
+    if api_key:
+        try:
+            return fetch_shopping_results_serpapi(query, api_key)
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "unauthorized" in error_msg or "401" in error_msg:
+                print(f"🚫 SerpAPI authentication failed - check your API key")
+                print(f"💡 Consider using free alternatives or manual deal entry")
+            elif "quota" in error_msg or "limit" in error_msg:
+                print(f"📊 SerpAPI quota exceeded - switching to free mode")
+                print(f"🔄 Using cached results (may be up to {CACHE_TTL_HOURS} hours old)")
+                # Return empty list but don't crash - let the system continue with cached data
+                return []
+            else:
+                print(f"⚠️  SerpAPI error: {e}")
+                print(f"🔄 Falling back to cached results...")
 
+    # No API key or SerpAPI failed - try to use any cached results (even old ones)
+    print(f"⚠️  No fresh data available for '{query}'")
+    print(f"💡 To get fresh data:")
+    print(f"   1. Add SERPAPI_API_KEY to .env (paid: $1.50/1K searches)")
+    print(f"   2. Use manual deal entry: python scripts/add_manual_deals.py")
+    print(f"   3. Use free Google CSE: python scripts/search_free_google.py")
+
+    # Return empty results rather than crashing
+    return []
+
+
+def fetch_shopping_results_serpapi(query: str, api_key: str) -> list[dict[str, Any]]:
+    """Fetch shopping results using SerpAPI"""
     params = {
         "engine": "google_shopping",
         "q": query,
@@ -377,6 +405,14 @@ def fetch_shopping_results(query: str, api_key: str | None) -> list[dict[str, An
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     save_json(CACHE_DIR / f"{slugify(query)}.json", results)
     return results
+
+
+def fetch_shopping_results_duckduckgo(query: str) -> list[dict[str, Any]]:
+    """Fetch shopping results using DuckDuckGo Instant Answer API (free)"""
+    # DuckDuckGo Instant Answer doesn't provide shopping results
+    # This is kept for future enhancement or different query types
+    print(f"🦆 DuckDuckGo doesn't provide shopping results for '{query}'")
+    return []
 
 
 def parse_price(raw_value: str | float | int | None) -> float | None:
@@ -747,17 +783,16 @@ def merge_item_records(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     for item in items:
         cheapest_offer = item["offers"][0] if item.get("offers") else None
+        item_name_normalized = item.get("name", "").lower().strip()
+        item_image = item.get("imageUrl", "")
+        
+        # Use fuzzy matching to find duplicates: exact image match OR very similar name
         duplicate = next(
             (
                 existing
                 for existing in merged
-                if existing.get("imageUrl")
-                and existing.get("imageUrl") == item.get("imageUrl")
-                and existing.get("cheapestStore") == item.get("cheapestStore")
-                and existing.get("cheapestPrice") == item.get("cheapestPrice")
-                and cheapest_offer
-                and existing.get("offers")
-                and existing["offers"][0].get("originalPrice") == cheapest_offer.get("originalPrice")
+                if (item_image and item_image == existing.get("imageUrl", ""))
+                or (similarity(item_name_normalized, existing.get("name", "").lower().strip()) >= FUZZY_MATCH_THRESHOLD)
             ),
             None,
         )

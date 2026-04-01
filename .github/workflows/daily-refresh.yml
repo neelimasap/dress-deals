@@ -2,11 +2,20 @@ name: Daily Refresh
 
 on:
   workflow_dispatch:
+    inputs:
+      source:
+        description: Trigger source
+        required: false
+        default: manual
   schedule:
     - cron: "15 13 * * *"
 
 permissions:
   contents: write
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh:

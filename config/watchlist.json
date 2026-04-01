@@ -4,12 +4,8 @@
     {
       "name": "Zimmermann",
       "queries": [
-        "Zimmermann dress on sale",
-        "Zimmermann dresses sale discount",
-        "Zimmermann dress markdown",
-        "Zimmermann dress clearance",
-        "Zimmermann dress outlet",
-        "Zimmermann dress reduced"
+        "Zimmermann dress sale",
+        "Zimmermann new arrivals"
       ],
       "fallbackQueries": [
         "Zimmermann dress",
@@ -117,6 +113,119 @@
         ]
       },
       "maxPrice": 5000,
+      "requireDiscount": true,
+      "minimumDiscountPercent": 5
+    },
+    {
+      "name": "Marchesa",
+      "queries": [
+        "Marchesa dress on sale",
+        "Marchesa gowns sale discount",
+        "Marchesa dress markdown",
+        "Marchesa gown clearance",
+        "Marchesa dress outlet",
+        "Marchesa gown reduced"
+      ],
+      "fallbackQueries": [
+        "Marchesa dress",
+        "Marchesa gowns"
+      ],
+      "saleModifiers": [
+        "sale",
+        "discount",
+        "markdown",
+        "clearance",
+        "outlet",
+        "reduced"
+      ],
+      "discoveryTerms": [
+        "evening gown",
+        "cocktail dress",
+        "bridal gown",
+        "wedding dress",
+        "maxi dress",
+        "formal dress",
+        "sequin dress",
+        "beaded dress",
+        "embroidered dress",
+        "lace dress",
+        "satin dress",
+        "chiffon dress",
+        "organza dress",
+        "tulle dress",
+        "ball gown",
+        "mermaid gown",
+        "A-line gown",
+        "empire gown"
+      ],
+      "tokenAliases": {},
+      "genericWords": [
+        "luxury",
+        "designer",
+        "couture",
+        "bridal"
+      ],
+      "productTerms": [
+        "dress",
+        "gown",
+        "bridal gown",
+        "wedding gown",
+        "evening gown"
+      ],
+      "blockedSources": [
+        "Poshmark",
+        "eBay",
+        "Mercari",
+        "Grailed"
+      ],
+      "trustedSources": [
+        "Marchesa",
+        "Saks Fifth Avenue",
+        "NET-A-PORTER",
+        "THE OUTNET",
+        "Mytheresa",
+        "Farfetch",
+        "Bloomingdale's",
+        "Neiman Marcus",
+        "Nordstrom",
+        "Bergdorf Goodman",
+        "Harvey Nichols",
+        "Selfridges",
+        "Marissa Collections"
+      ],
+      "sourceCategories": {
+        "retail": [
+          "Marchesa",
+          "Saks Fifth Avenue",
+          "NET-A-PORTER",
+          "THE OUTNET",
+          "Mytheresa",
+          "Farfetch",
+          "Bloomingdale's",
+          "Neiman Marcus",
+          "Nordstrom",
+          "Bergdorf Goodman",
+          "Harvey Nichols",
+          "Selfridges",
+          "Marissa Collections"
+        ],
+        "aggregator": [
+          "Lyst",
+          "Editorialist",
+          "ModeSens",
+          "ShopSimon",
+          "Stylight Inc.",
+          "BeyondStyle",
+          "Realry"
+        ],
+        "resale": [
+          "The RealReal",
+          "Vestiaire Collective",
+          "The Luxury Closet US",
+          "Joli Closet"
+        ]
+      },
+      "maxPrice": 10000,
       "requireDiscount": true,
       "minimumDiscountPercent": 5
     }

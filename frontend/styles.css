@@ -163,8 +163,9 @@ h1 {
 .best-deal-card {
   margin-top: 12px;
   border-radius: 18px;
-  padding: 14px;
+  padding: 10px;
   background: linear-gradient(160deg, rgba(183, 78, 43, 0.12), rgba(255, 250, 242, 0.95));
+  font-size: 0.85rem;
 }
 
 .best-deal-image-shell,
@@ -178,7 +179,7 @@ h1 {
 
 .best-deal-image-shell {
   aspect-ratio: 4 / 5;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .deal-image-shell {

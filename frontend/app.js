@@ -458,8 +458,8 @@ async function main() {
       );
 
       heading.textContent = selectedBrand
-        ? `${selectedBrand} best buys`
-        : "Best buys across the market";
+        ? `${selectedBrand}`
+        : "Deals across the market";
 
       const heroEntity = visible[0] || allEntities[0];
       if (heroEntity) {
@@ -470,7 +470,6 @@ async function main() {
       }
 
       renderStats(buildStats(allEntities, visible));
-      renderEntityGrid("#recommendations-grid", visible.slice(0, 3));
       renderEntityGrid("#deals-grid", visible);
       emptyState.hidden = visible.length > 0;
     }

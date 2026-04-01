@@ -38,12 +38,13 @@
                 type="search"
                 placeholder="white floral midi, slip dress, wedding guest, daytime..."
               />
-              <button type="submit" class="button button-primary">Find Best Buys</button>
+              <button type="submit" class="button button-primary">Find Deals</button>
             </div>
           </form>
           <div class="hero-actions">
             <button id="install-button" class="button button-primary" hidden>Add to Home Screen</button>
             <a class="button button-secondary" href="reports/daily-deals.md">Open daily report</a>
+            <button id="refresh-btn" class="button button-secondary" onclick="refreshDeals()">Refresh Deals</button>
           </div>
         </div>
         <aside class="hero-panel">
@@ -55,19 +56,10 @@
       <main>
         <section class="stats-grid" id="stats-grid" aria-label="Overview"></section>
 
-        <section class="section-heading compact-heading">
-          <div>
-            <p class="eyebrow">Recommendation Queue</p>
-            <h2>What To Buy Right Now</h2>
-          </div>
-        </section>
-
-        <section id="recommendations-grid" class="deals-grid recommendations-grid" aria-live="polite"></section>
-
         <section class="section-heading">
           <div>
             <p class="eyebrow">Market Sweep</p>
-            <h2>Best Buys Across The Market</h2>
+            <h2>Deals Across The Market</h2>
           </div>
           <div class="section-meta-group">
             <div class="filters-row">
@@ -123,5 +115,31 @@
     </template>
 
     <script type="module" src="frontend/app.js"></script>
+    <script>
+      async function refreshDeals() {
+        const btn = document.getElementById("refresh-btn");
+        const originalLabel = "Refresh Deals";
+        btn.textContent = "Queueing refresh...";
+        btn.disabled = true;
+
+        try {
+          const res = await fetch("/api/refresh", { method: "POST" });
+          const payload = await res.json().catch(() => ({}));
+
+          if (res.ok) {
+            btn.textContent = "Refresh queued";
+          } else {
+            btn.textContent = payload.error || "Refresh failed";
+          }
+        } catch {
+          btn.textContent = "Refresh failed";
+        }
+
+        window.setTimeout(() => {
+          btn.textContent = originalLabel;
+          btn.disabled = false;
+        }, 4000);
+      }
+    </script>
   </body>
 </html>
