@@ -93,8 +93,12 @@ SOURCE_ALIASES = {
     "netaporter": "net-a-porter",
     "net-a-porter": "net-a-porter",
     "saks fifth avenue": "saks fifth avenue",
+    "saks off 5th": "saks off 5th",
+    "saksoff5th": "saks off 5th",
     "farfetch com": "farfetch",
     "farfetch.com": "farfetch",
+    "lyst com": "lyst",
+    "lyst.com": "lyst",
 }
 
 
@@ -436,6 +440,28 @@ def get_text_blob(result: dict[str, Any]) -> str:
     return " ".join(fields)
 
 
+def brand_name_variants(brand: BrandConfig) -> set[str]:
+    raw = brand.name.lower().strip()
+    variants = {
+        raw,
+        raw.replace("-", " "),
+        raw.replace(" ", "-"),
+        re.sub(r"[^a-z0-9]+", "", raw),
+    }
+    return {variant for variant in variants if variant}
+
+
+def brand_is_mentioned(text: str, brand: BrandConfig) -> bool:
+    lowered = text.lower()
+    collapsed = re.sub(r"[^a-z0-9]+", "", lowered)
+    for variant in brand_name_variants(brand):
+        if variant in lowered:
+            return True
+        if re.sub(r"[^a-z0-9]+", "", variant) in collapsed:
+            return True
+    return False
+
+
 def extract_release_year(result: dict[str, Any], now: datetime) -> int | None:
     years = {
         int(match)
@@ -453,7 +479,7 @@ def looks_like_brand_dress(result: dict[str, Any], brand: BrandConfig) -> bool:
     normalized_blob = normalize_title(text_blob, brand)
     has_dress_signal = has_product_signal(text_blob, brand)
 
-    if brand.name.lower() in text_blob.lower() and has_dress_signal:
+    if brand_is_mentioned(text_blob, brand) and has_dress_signal:
         return True
 
     if not has_dress_signal:
@@ -506,7 +532,6 @@ def normalize_item_name(title: str, brand: BrandConfig) -> str:
     name = re.sub(r"\s+size\s+.*$", "", name, flags=re.IGNORECASE)
     name = LEADING_DESCRIPTOR_PATTERN.sub("", name)
     name = TRAILING_SIZE_PATTERN.sub("", name).strip(" ,.-")
-    name = re.sub(r"\bmini\s+dress\b", "midi dress", name, flags=re.IGNORECASE)
     name = re.sub(r"\bdrawn\s+illuminate\b", "illuminate drawn", name, flags=re.IGNORECASE)
     name = re.sub(r"\s+", " ", name).strip(" ,.-")
     if not name.lower().startswith(brand.name.lower()):
@@ -515,7 +540,9 @@ def normalize_item_name(title: str, brand: BrandConfig) -> str:
 
 
 def normalize_title(title: str, brand: BrandConfig) -> str:
-    cleaned = title.lower().replace(brand.name.lower(), " ")
+    cleaned = title.lower()
+    for variant in sorted(brand_name_variants(brand), key=len, reverse=True):
+        cleaned = cleaned.replace(variant, " ")
     cleaned = FILLER_PATTERN.sub(" ", cleaned)
     cleaned = re.sub(r"[^a-z0-9 ]", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
