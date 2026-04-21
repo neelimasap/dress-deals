@@ -34,7 +34,7 @@ def add_manual_deal():
     print("=" * 50)
 
     # Get brand
-    brands = ["Zimmermann", "Marchesa"]
+    brands = ["Zimmermann", "Marchesa", "Self-Portrait", "Cecilie Bahnsen"]
     print("\nAvailable brands:")
     for i, brand in enumerate(brands, 1):
         print(f"{i}. {brand}")

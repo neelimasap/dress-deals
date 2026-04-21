@@ -2,6 +2,16 @@
 
 Tracks the cheapest recent Zimmermann dress offers from one cached Google Shopping query.
 
+## Project Layout
+
+- App entry files stay at the repo root: `index.html`, `service-worker.js`, `manifest.webmanifest`
+- Browser code lives in `frontend/`
+- Serverless and local API handlers live in `api/`
+- Data and generated reports live in `data/` and `reports/`
+- Collector and utility scripts live in `scripts/`
+- Configuration lives in `config/`
+- Project notes and reference docs live in `docs/`
+
 ## Data Source
 
 SerpApi Google Shopping results.

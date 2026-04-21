@@ -340,6 +340,111 @@
       "maxPrice": 5000,
       "requireDiscount": true,
       "minimumDiscountPercent": 5
+    },
+    {
+      "name": "Cecilie Bahnsen",
+      "queries": [
+        "Cecilie Bahnsen dress sale",
+        "Cecilie Bahnsen new arrivals",
+        "Cecilie Bahnsen dress markdown",
+        "Cecilie Bahnsen skirt sale",
+        "Cecilie Bahnsen top sale",
+        "Cecilie Bahnsen outlet"
+      ],
+      "fallbackQueries": [
+        "Cecilie Bahnsen dress",
+        "Cecilie Bahnsen dresses"
+      ],
+      "saleModifiers": [
+        "sale",
+        "discount",
+        "markdown",
+        "clearance",
+        "outlet",
+        "reduced"
+      ],
+      "discoveryTerms": [
+        "midi dress",
+        "mini dress",
+        "maxi dress",
+        "cotton dress",
+        "poplin dress",
+        "ruffle dress",
+        "floral dress",
+        "quilted dress",
+        "smock dress",
+        "puff sleeve dress",
+        "babydoll dress",
+        "skirt",
+        "top",
+        "blouse",
+        "jacket"
+      ],
+      "tokenAliases": {},
+      "genericWords": [
+        "cotton",
+        "poplin",
+        "floral",
+        "quilted"
+      ],
+      "productTerms": [
+        "dress",
+        "gown",
+        "skirt",
+        "top",
+        "blouse",
+        "jacket"
+      ],
+      "blockedSources": [
+        "Poshmark",
+        "eBay",
+        "Mercari",
+        "Grailed"
+      ],
+      "trustedSources": [
+        "Cecilie Bahnsen",
+        "Saks Fifth Avenue",
+        "NET-A-PORTER",
+        "Mytheresa",
+        "Farfetch",
+        "Nordstrom",
+        "Bergdorf Goodman",
+        "Harrods",
+        "Selfridges",
+        "SSENSE"
+      ],
+      "sourceCategories": {
+        "retail": [
+          "Cecilie Bahnsen",
+          "Saks Fifth Avenue",
+          "NET-A-PORTER",
+          "Mytheresa",
+          "Farfetch",
+          "Nordstrom",
+          "Bergdorf Goodman",
+          "Harrods",
+          "Selfridges",
+          "SSENSE"
+        ],
+        "aggregator": [
+          "Lyst",
+          "Editorialist",
+          "ModeSens",
+          "ShopSimon",
+          "Stylight Inc.",
+          "BeyondStyle",
+          "Realry"
+        ],
+        "resale": [
+          "The RealReal",
+          "Vestiaire Collective",
+          "The Luxury Closet US",
+          "Joli Closet"
+        ]
+      },
+      "maxPrice": 5000,
+      "requireDiscount": true,
+      "minimumDiscountPercent": 5
     }
   ]
 }
