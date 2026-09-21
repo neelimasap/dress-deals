@@ -6,6 +6,7 @@ data/cache/
 reports/*
 !reports/daily-deals.md
 output/
+public/
 node_modules/
 server-out.log
 server-err.log

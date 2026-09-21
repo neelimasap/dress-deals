@@ -9,7 +9,7 @@
     "validate": "python scripts/validate_data.py",
     "lint": "python -m ruff check scripts tests && node --check frontend/app.js && node --check service-worker.js && node --check api/refresh.js && node --check api/refresh-core.cjs && node --check scripts/serve.mjs && node --check scripts/generate-report.mjs",
     "test": "python -m unittest discover -s tests -p 'test_*.py' && node --test tests/*.test.cjs",
-    "build": "npm run validate && npm run report",
+    "build": "npm run validate && npm run report && node scripts/build-static.mjs",
     "check": "npm run lint && npm test && npm run build"
   }
 }
