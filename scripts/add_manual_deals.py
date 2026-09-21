@@ -131,8 +131,8 @@ def add_manual_deal():
     # Save
     save_deals(data)
 
-    print("
-✅ Deal added successfully!"    print(f"• {dress_name}")
+    print("\n✅ Deal added successfully!")
+    print(f"• {dress_name}")
     print(f"• {store_name}: ${price} (was ${original_price})")
     print(f"• {len(brand_data['items'])} total {brand_name} deals now")
 

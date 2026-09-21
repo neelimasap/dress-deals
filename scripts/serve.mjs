@@ -1,11 +1,14 @@
 import { createReadStream } from "node:fs";
 import { access } from "node:fs/promises";
 import { createServer } from "node:http";
+import { createRequire } from "node:module";
 import { extname, normalize, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const frontendRoot = resolve(root, "frontend");
 const port = Number(process.env.PORT || 4173);
+const require = createRequire(import.meta.url);
+const { authorizeRefresh, queueRefresh } = require("../api/refresh-core.cjs");
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -17,89 +20,17 @@ const mimeTypes = {
   ".webmanifest": "application/manifest+json; charset=utf-8"
 };
 
-async function queueRefresh() {
-  const token = process.env.GITHUB_TOKEN;
-  const repository = process.env.GITHUB_REPOSITORY || "neelimasap/dress-deals";
-  const workflowId = process.env.GITHUB_REFRESH_WORKFLOW || "daily-refresh.yml";
-  const ref = process.env.GITHUB_REFRESH_REF || "main";
-
-  if (!token) {
-    return {
-      status: 501,
-      payload: {
-        ok: false,
-        error: "Missing GITHUB_TOKEN"
-      }
-    };
-  }
-
-  const [owner, repo] = repository.split("/");
-  if (!owner || !repo) {
-    return {
-      status: 500,
-      payload: {
-        ok: false,
-        error: "Invalid GITHUB_REPOSITORY"
-      }
-    };
-  }
-
-  try {
-    const githubResponse = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "User-Agent": "dress-deals-refresh"
-        },
-        body: JSON.stringify({
-          ref,
-          inputs: {
-            source: "local-preview"
-          }
-        })
-      }
-    );
-
-    if (!githubResponse.ok) {
-      const details = await githubResponse.text();
-      return {
-        status: githubResponse.status,
-        payload: {
-          ok: false,
-          error: "GitHub workflow dispatch failed",
-          details
-        }
-      };
-    }
-
-    return {
-      status: 202,
-      payload: {
-        ok: true,
-        message: "Refresh queued. GitHub Actions will update the data shortly."
-      }
-    };
-  } catch (error) {
-    return {
-      status: 500,
-      payload: {
-        ok: false,
-        error: "Refresh request failed",
-        details: error instanceof Error ? error.message : String(error)
-      }
-    };
-  }
-}
-
 const server = createServer(async (request, response) => {
   const urlPath = new URL(request.url, `http://${request.headers.host}`).pathname;
 
   if (request.method === "POST" && urlPath === "/api/refresh") {
-    const result = await queueRefresh();
+    const authorization = authorizeRefresh(request, process.env.REFRESH_SECRET);
+    if (!authorization.ok) {
+      response.writeHead(authorization.status, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ ok: false, error: authorization.error }));
+      return;
+    }
+    const result = await queueRefresh({ source: "local-preview" });
     response.writeHead(result.status, { "Content-Type": "application/json" });
     response.end(JSON.stringify(result.payload));
     return;

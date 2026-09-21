@@ -9,13 +9,12 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
 
-from utils import load_env_file, load_json, save_json
+from utils import load_env_file
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ENV_PATH = PROJECT_ROOT / ".env"

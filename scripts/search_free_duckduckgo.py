@@ -11,6 +11,7 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
+
 def search_duckduckgo(query: str) -> dict[str, Any] | None:
     """Search using DuckDuckGo Instant Answer API (completely free)"""
     params = {

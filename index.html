@@ -119,11 +119,18 @@
       async function refreshDeals() {
         const btn = document.getElementById("refresh-btn");
         const originalLabel = "Refresh Deals";
+        const refreshSecret = window.prompt("Enter the admin refresh key");
+        if (!refreshSecret) {
+          return;
+        }
         btn.textContent = "Queueing refresh...";
         btn.disabled = true;
 
         try {
-          const res = await fetch("/api/refresh", { method: "POST" });
+          const res = await fetch("/api/refresh", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${refreshSecret}` }
+          });
           const payload = await res.json().catch(() => ({}));
 
           if (res.ok) {

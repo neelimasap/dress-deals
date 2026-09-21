@@ -3,24 +3,25 @@ from __future__ import annotations
 import json
 import os
 import re
-import sys
 import urllib.parse
 import urllib.request
-from hashlib import sha1
 from dataclasses import dataclass, field
 from datetime import datetime
 from difflib import SequenceMatcher
+from hashlib import sha1
 from pathlib import Path
 from typing import Any
 
+from observability import CollectionMetrics, log_event, save_run_metrics
 from utils import load_env_file, load_json, save_json, slugify
-
+from validate_data import validate_against_previous, validate_payload
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEALS_PATH = PROJECT_ROOT / "data" / "deals.json"
 CACHE_DIR = PROJECT_ROOT / "data" / "cache"
 ENV_PATH = PROJECT_ROOT / ".env"
 WATCHLIST_PATH = PROJECT_ROOT / "config" / "watchlist.json"
+METRICS_PATH = PROJECT_ROOT / "data" / "run-metrics.json"
 SERPAPI_URL = "https://serpapi.com/search.json"
 CACHE_TTL_HOURS = 168  # 7 days instead of 24 hours
 REQUEST_TIMEOUT_SECONDS = 20
@@ -43,7 +44,7 @@ DEFAULT_PRODUCT_TERMS = {
     "tunic",
     "skirt",
 }
-FILLER_PATTERN = re.compile(r"\b(by|womens|women|woman|size|new)\b", re.IGNORECASE)
+FILLER_PATTERN = re.compile(r"\b(by|women'?s?|woman'?s?|size|new)\b", re.IGNORECASE)
 LEADING_DESCRIPTOR_PATTERN = re.compile(
     r"^(cream|dahlia|peony|mint|hibiscus|ivory|pink|blue|yellow|floral|printed)\s+",
     re.IGNORECASE,
@@ -303,25 +304,45 @@ def build_discovery_queries(brand: BrandConfig) -> list[str]:
     return normalize_query_list([*queries, *generated])[:MAX_DAILY_QUERIES]
 
 
-def load_cached_results(query: str) -> list[dict[str, Any]] | None:
+def load_cached_results(
+    query: str, metrics: CollectionMetrics | None = None
+) -> list[dict[str, Any]] | None:
     cache_file = CACHE_DIR / f"{slugify(query)}.json"
 
     if not cache_file.exists():
+        if metrics:
+            metrics.cache_misses += 1
         return None
 
     age = datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)
     if age.total_seconds() > CACHE_TTL_HOURS * 3600:
+        if metrics:
+            metrics.cache_misses += 1
         return None
 
     try:
         payload = load_json(cache_file)
     except json.JSONDecodeError:
+        if metrics:
+            metrics.cache_misses += 1
         return None
 
-    return payload if isinstance(payload, list) else None
+    if isinstance(payload, list):
+        if metrics:
+            metrics.cache_hits += 1
+        log_event("info", "cache_hit", query=query, result_count=len(payload))
+        return payload
+
+    if metrics:
+        metrics.cache_misses += 1
+    return None
 
 
-def fetch_immersive_offers(page_token: str, api_key: str | None) -> list[dict[str, Any]]:
+def fetch_immersive_offers(
+    page_token: str,
+    api_key: str | None,
+    metrics: CollectionMetrics | None = None,
+) -> list[dict[str, Any]]:
     cache_file = CACHE_DIR / f"immersive-{sha1(page_token.encode('utf-8')).hexdigest()[:16]}.json"
 
     if cache_file.exists():
@@ -330,6 +351,8 @@ def fetch_immersive_offers(page_token: str, api_key: str | None) -> list[dict[st
             try:
                 payload = load_json(cache_file)
                 if isinstance(payload, list) and payload:
+                    if metrics:
+                        metrics.cache_hits += 1
                     return payload
             except json.JSONDecodeError:
                 pass
@@ -341,9 +364,14 @@ def fetch_immersive_offers(page_token: str, api_key: str | None) -> list[dict[st
     url = f"{SERPAPI_URL}?{urllib.parse.urlencode(params)}"
 
     try:
+        if metrics:
+            metrics.api_requests += 1
         with urllib.request.urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS) as response:
             payload = json.load(response)
-    except Exception:
+    except Exception as error:
+        if metrics:
+            metrics.api_errors += 1
+        log_event("warning", "immersive_api_failed", error_type=type(error).__name__)
         return []
 
     sellers = (
@@ -356,41 +384,60 @@ def fetch_immersive_offers(page_token: str, api_key: str | None) -> list[dict[st
     return sellers
 
 
-def fetch_shopping_results(query: str, api_key: str | None) -> list[dict[str, Any]]:
-    cached = load_cached_results(query)
+def fetch_shopping_results(
+    query: str,
+    api_key: str | None,
+    metrics: CollectionMetrics | None = None,
+) -> list[dict[str, Any]]:
+    if metrics:
+        metrics.queries_attempted += 1
+    cached = load_cached_results(query, metrics)
     if cached is not None:
         return cached
 
     # Try SerpAPI first
     if api_key:
         try:
-            return fetch_shopping_results_serpapi(query, api_key)
+            return fetch_shopping_results_serpapi(query, api_key, metrics)
         except Exception as e:
+            if metrics:
+                metrics.api_errors += 1
             error_msg = str(e).lower()
+            log_event(
+                "warning",
+                "shopping_api_failed",
+                query=query,
+                error_type=type(e).__name__,
+                error=str(e)[:300],
+            )
             if "unauthorized" in error_msg or "401" in error_msg:
-                print(f"🚫 SerpAPI authentication failed - check your API key")
-                print(f"💡 Consider using free alternatives or manual deal entry")
+                print("🚫 SerpAPI authentication failed - check your API key")
+                print("💡 Consider using free alternatives or manual deal entry")
             elif "quota" in error_msg or "limit" in error_msg:
-                print(f"📊 SerpAPI quota exceeded - switching to free mode")
+                print("📊 SerpAPI quota exceeded - switching to free mode")
                 print(f"🔄 Using cached results (may be up to {CACHE_TTL_HOURS} hours old)")
                 # Return empty list but don't crash - let the system continue with cached data
                 return []
             else:
                 print(f"⚠️  SerpAPI error: {e}")
-                print(f"🔄 Falling back to cached results...")
+                print("🔄 Falling back to cached results...")
 
     # No API key or SerpAPI failed - try to use any cached results (even old ones)
     print(f"⚠️  No fresh data available for '{query}'")
-    print(f"💡 To get fresh data:")
-    print(f"   1. Add SERPAPI_API_KEY to .env (paid: $1.50/1K searches)")
-    print(f"   2. Use manual deal entry: python scripts/add_manual_deals.py")
-    print(f"   3. Use free Google CSE: python scripts/search_free_google.py")
+    print("💡 To get fresh data:")
+    print("   1. Add SERPAPI_API_KEY to .env (paid: $1.50/1K searches)")
+    print("   2. Use manual deal entry: python scripts/add_manual_deals.py")
+    print("   3. Use free Google CSE: python scripts/search_free_google.py")
 
     # Return empty results rather than crashing
     return []
 
 
-def fetch_shopping_results_serpapi(query: str, api_key: str) -> list[dict[str, Any]]:
+def fetch_shopping_results_serpapi(
+    query: str,
+    api_key: str,
+    metrics: CollectionMetrics | None = None,
+) -> list[dict[str, Any]]:
     """Fetch shopping results using SerpAPI"""
     params = {
         "engine": "google_shopping",
@@ -402,6 +449,9 @@ def fetch_shopping_results_serpapi(query: str, api_key: str) -> list[dict[str, A
     }
     url = f"{SERPAPI_URL}?{urllib.parse.urlencode(params)}"
 
+    if metrics:
+        metrics.api_requests += 1
+    log_event("info", "shopping_api_request", query=query)
     with urllib.request.urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS) as response:
         payload = json.load(response)
 
@@ -809,7 +859,6 @@ def merge_item_records(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     merged: list[dict[str, Any]] = []
 
     for item in items:
-        cheapest_offer = item["offers"][0] if item.get("offers") else None
         item_name_normalized = item.get("name", "").lower().strip()
         item_image = item.get("imageUrl", "")
         
@@ -895,6 +944,7 @@ def map_items(
     previous_items: dict[str, dict[str, Any]],
     api_key: str | None,
     brand: BrandConfig,
+    metrics: CollectionMetrics | None = None,
 ) -> list[dict[str, Any]]:
     now = datetime.now().astimezone()
     grouped: dict[str, dict[str, Any]] = {}
@@ -952,7 +1002,7 @@ def map_items(
     for item_id, entry in grouped.items():
         if len(entry["offers"]) < MIN_DISCOVERY_OFFERS and immersive_calls < MAX_IMMERSIVE_CALLS_PER_RUN:
             for page_token in sorted(entry["pageTokens"]):
-                immersive_offers = fetch_immersive_offers(page_token, api_key)
+                immersive_offers = fetch_immersive_offers(page_token, api_key, metrics)
                 if not immersive_offers:
                     continue
                 for immersive_offer in immersive_offers:
@@ -1002,10 +1052,14 @@ def map_items(
     return sorted(merge_item_records(items), key=lambda item: item["cheapestPrice"])
 
 
-def gather_discovery_results(api_key: str | None, brand: BrandConfig) -> list[dict[str, Any]]:
+def gather_discovery_results(
+    api_key: str | None,
+    brand: BrandConfig,
+    metrics: CollectionMetrics | None = None,
+) -> list[dict[str, Any]]:
     queries = build_discovery_queries(brand)
     primary_query = queries[0]
-    results = fetch_shopping_results(primary_query, api_key)
+    results = fetch_shopping_results(primary_query, api_key, metrics)
 
     if len(results) < MIN_PRIMARY_RESULTS and MAX_DAILY_QUERIES > 1:
         for fallback_query in brand.fallback_queries:
@@ -1016,7 +1070,7 @@ def gather_discovery_results(api_key: str | None, brand: BrandConfig) -> list[di
 
     merged: dict[str, dict[str, Any]] = {}
     for query in queries:
-        for result in fetch_shopping_results(query, api_key):
+        for result in fetch_shopping_results(query, api_key, metrics):
             key = str(result.get("product_id") or result.get("title") or result.get("link") or "")
             if key and key not in merged:
                 merged[key] = result
@@ -1024,17 +1078,32 @@ def gather_discovery_results(api_key: str | None, brand: BrandConfig) -> list[di
     return list(merged.values())
 
 
-def collect() -> dict[str, Any]:
+def collect(
+    metrics: CollectionMetrics | None = None,
+    previous_payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     load_env_file(ENV_PATH)
     api_key = os.getenv("SERPAPI_API_KEY")
     timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
-    previous_payload = load_previous_payload()
+    previous_payload = previous_payload if previous_payload is not None else load_previous_payload()
     brands_payload: list[dict[str, Any]] = []
 
     for brand in load_brand_configs():
+        log_event("info", "brand_collection_started", brand=brand.name)
         previous_items = previous_items_for_brand(previous_payload, brand.name)
-        results = gather_discovery_results(api_key, brand)
-        items = map_items(results, timestamp, previous_items, api_key, brand)
+        results = gather_discovery_results(api_key, brand, metrics)
+        items = map_items(results, timestamp, previous_items, api_key, brand, metrics)
+        if metrics:
+            metrics.brands_processed += 1
+            metrics.raw_results += len(results)
+            metrics.items_published += len(items)
+        log_event(
+            "info",
+            "brand_collection_completed",
+            brand=brand.name,
+            raw_result_count=len(results),
+            item_count=len(items),
+        )
         brands_payload.append(
             {
                 "name": brand.name,
@@ -1049,13 +1118,37 @@ def collect() -> dict[str, Any]:
 
 
 def main() -> int:
+    metrics = CollectionMetrics()
+    log_event("info", "collection_started", run_id=metrics.run_id)
     try:
-        payload = collect()
+        previous_payload = load_previous_payload()
+        payload = collect(metrics, previous_payload)
+        validation_errors = validate_payload(payload)
+        if os.getenv("ALLOW_LARGE_DATA_DROP") != "1":
+            validation_errors.extend(validate_against_previous(payload, previous_payload))
+        if validation_errors:
+            metrics.validation_errors = len(validation_errors)
+            raise ValueError(f"generated data failed validation: {validation_errors[0]}")
         save_json(DEALS_PATH, payload)
-        print(f"Updated {DEALS_PATH}")
+        metrics.finish("success")
+        save_run_metrics(METRICS_PATH, metrics)
+        log_event(
+            "info",
+            "collection_completed",
+            output=str(DEALS_PATH),
+            **metrics.snapshot(),
+        )
         return 0
     except Exception as error:
-        print(f"Collection failed: {error}", file=sys.stderr)
+        metrics.finish("failure", str(error)[:500])
+        save_run_metrics(METRICS_PATH, metrics)
+        log_event(
+            "error",
+            "collection_failed",
+            run_id=metrics.run_id,
+            error_type=type(error).__name__,
+            error=str(error),
+        )
         return 1
 
 

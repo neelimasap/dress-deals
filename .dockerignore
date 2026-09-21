@@ -1,0 +1,9 @@
+.env
+.git
+.github
+.vercel
+data/cache
+node_modules
+reports
+__pycache__
+*.pyc

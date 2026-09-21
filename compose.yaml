@@ -1,0 +1,25 @@
+services:
+  web:
+    build: .
+    ports:
+      - "4173:4173"
+    environment:
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPOSITORY: ${GITHUB_REPOSITORY:-neelimasap/dress-deals}
+      GITHUB_REFRESH_WORKFLOW: ${GITHUB_REFRESH_WORKFLOW:-daily-refresh.yml}
+      GITHUB_REFRESH_REF: ${GITHUB_REFRESH_REF:-main}
+      REFRESH_SECRET: ${REFRESH_SECRET:-}
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+    restart: unless-stopped
+
+  collector:
+    build: .
+    command: ["python3", "scripts/collect_deals.py"]
+    environment:
+      SERPAPI_API_KEY: ${SERPAPI_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+    profiles: ["tools"]

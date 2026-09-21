@@ -3,7 +3,8 @@ __pycache__/
 *.pyc
 data/cache/
 /.vercel-static-deploy/
-reports/
+reports/*
+!reports/daily-deals.md
 output/
 node_modules/
 server-out.log
